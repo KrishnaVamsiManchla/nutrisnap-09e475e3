@@ -68,6 +68,63 @@ export type Database = {
         }
         Relationships: []
       }
+      user_goals: {
+        Row: {
+          calories: number
+          carbs_g: number
+          created_at: string
+          fat_g: number
+          id: string
+          protein_g: number
+          updated_at: string
+          user_id: string
+          water_ml: number
+        }
+        Insert: {
+          calories?: number
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          id?: string
+          protein_g?: number
+          updated_at?: string
+          user_id: string
+          water_ml?: number
+        }
+        Update: {
+          calories?: number
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          id?: string
+          protein_g?: number
+          updated_at?: string
+          user_id?: string
+          water_ml?: number
+        }
+        Relationships: []
+      }
+      water_entries: {
+        Row: {
+          amount_ml: number
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount_ml?: number
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount_ml?: number
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

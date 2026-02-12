@@ -11,6 +11,8 @@ import ManualEntry from "@/components/ManualEntry";
 import NutritionResult from "@/components/NutritionResult";
 import DailySummary from "@/components/DailySummary";
 import FoodLog from "@/components/FoodLog";
+import WaterTracker from "@/components/WaterTracker";
+import GoalsEditor from "@/components/GoalsEditor";
 
 interface NutritionData {
   food_name: string;
@@ -35,25 +37,119 @@ interface FoodEntry {
   created_at: string;
 }
 
+interface Goals {
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  water_ml: number;
+}
+
+interface WaterEntry {
+  id: string;
+  amount_ml: number;
+  created_at: string;
+}
+
+const DEFAULT_GOALS: Goals = { calories: 2000, protein_g: 150, carbs_g: 250, fat_g: 65, water_ml: 2500 };
+
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [result, setResult] = useState<NutritionData | null>(null);
   const [saving, setSaving] = useState(false);
+  const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS);
+  const [savingGoals, setSavingGoals] = useState(false);
+  const [waterEntries, setWaterEntries] = useState<WaterEntry[]>([]);
+
+  const todayStart = useCallback(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  }, []);
 
   const loadEntries = useCallback(async () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const { data } = await supabase
       .from("food_entries")
       .select("*")
-      .gte("created_at", today.toISOString())
+      .gte("created_at", todayStart())
       .order("created_at", { ascending: false });
     if (data) setEntries(data as FoodEntry[]);
-  }, []);
+  }, [todayStart]);
 
-  useEffect(() => { loadEntries(); }, [loadEntries]);
+  const loadGoals = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("user_goals")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (data) {
+      setGoals({
+        calories: data.calories,
+        protein_g: data.protein_g,
+        carbs_g: data.carbs_g,
+        fat_g: data.fat_g,
+        water_ml: data.water_ml,
+      });
+    }
+  }, [user]);
+
+  const loadWater = useCallback(async () => {
+    const { data } = await supabase
+      .from("water_entries")
+      .select("*")
+      .gte("created_at", todayStart())
+      .order("created_at", { ascending: false });
+    if (data) setWaterEntries(data as WaterEntry[]);
+  }, [todayStart]);
+
+  useEffect(() => {
+    loadEntries();
+    loadGoals();
+    loadWater();
+  }, [loadEntries, loadGoals, loadWater]);
+
+  const saveGoals = async (newGoals: Goals) => {
+    if (!user) return;
+    setSavingGoals(true);
+    try {
+      const { data: existing } = await supabase
+        .from("user_goals")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from("user_goals").update(newGoals).eq("user_id", user.id);
+      } else {
+        await supabase.from("user_goals").insert({ user_id: user.id, ...newGoals });
+      }
+      setGoals(newGoals);
+      toast({ title: "Goals saved!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingGoals(false);
+    }
+  };
+
+  const addWater = async (ml: number) => {
+    if (!user) return;
+    const { error } = await supabase.from("water_entries").insert({ user_id: user.id, amount_ml: ml });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      loadWater();
+    }
+  };
+
+  const removeLastWater = async () => {
+    if (waterEntries.length === 0) return;
+    await supabase.from("water_entries").delete().eq("id", waterEntries[0].id);
+    loadWater();
+  };
 
   const saveEntry = async (mealType: string) => {
     if (!result || !user) return;
@@ -98,6 +194,8 @@ const Dashboard = () => {
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
 
+  const totalWaterMl = waterEntries.reduce((sum, e) => sum + e.amount_ml, 0);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -119,10 +217,22 @@ const Dashboard = () => {
         {/* Daily Summary */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Today's Progress</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Today's Progress</CardTitle>
+              <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
+            </div>
           </CardHeader>
-          <CardContent>
-            <DailySummary {...totals} />
+          <CardContent className="space-y-4">
+            <DailySummary
+              {...totals}
+              goals={{ calories: goals.calories, protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
+            />
+            <WaterTracker
+              currentMl={totalWaterMl}
+              goalMl={goals.water_ml}
+              onAdd={addWater}
+              onRemove={removeLastWater}
+            />
           </CardContent>
         </Card>
 
