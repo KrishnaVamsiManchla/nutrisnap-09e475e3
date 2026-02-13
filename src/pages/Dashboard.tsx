@@ -13,6 +13,7 @@ import DailySummary from "@/components/DailySummary";
 import FoodLog from "@/components/FoodLog";
 import WaterTracker from "@/components/WaterTracker";
 import GoalsEditor from "@/components/GoalsEditor";
+import CalorieCalculator from "@/components/CalorieCalculator";
 
 interface NutritionData {
   food_name: string;
@@ -45,6 +46,15 @@ interface Goals {
   water_ml: number;
 }
 
+interface ProfileData {
+  age: number;
+  gender: "male" | "female";
+  height_cm: number;
+  weight_kg: number;
+  activity_level: "sedentary" | "light" | "moderate" | "active" | "very_active";
+  goal: "cut" | "maintain" | "bulk";
+}
+
 interface WaterEntry {
   id: string;
   amount_ml: number;
@@ -62,6 +72,8 @@ const Dashboard = () => {
   const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS);
   const [savingGoals, setSavingGoals] = useState(false);
   const [waterEntries, setWaterEntries] = useState<WaterEntry[]>([]);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const todayStart = useCallback(() => {
     const d = new Date();
@@ -105,11 +117,31 @@ const Dashboard = () => {
     if (data) setWaterEntries(data as WaterEntry[]);
   }, [todayStart]);
 
+  const loadProfile = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (data) {
+      setProfile({
+        age: data.age ?? 25,
+        gender: (data.gender as "male" | "female") ?? "male",
+        height_cm: Number(data.height_cm) || 175,
+        weight_kg: Number(data.weight_kg) || 70,
+        activity_level: (data.activity_level as ProfileData["activity_level"]) ?? "moderate",
+        goal: (data.goal as ProfileData["goal"]) ?? "maintain",
+      });
+    }
+  }, [user]);
+
   useEffect(() => {
     loadEntries();
     loadGoals();
     loadWater();
-  }, [loadEntries, loadGoals, loadWater]);
+    loadProfile();
+  }, [loadEntries, loadGoals, loadWater, loadProfile]);
 
   const saveGoals = async (newGoals: Goals) => {
     if (!user) return;
@@ -132,6 +164,44 @@ const Dashboard = () => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setSavingGoals(false);
+    }
+  };
+
+  const saveProfile = async (newProfile: ProfileData, tdee: number) => {
+    if (!user) return;
+    setSavingProfile(true);
+    try {
+      const { data: existing } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const profileRow = {
+        age: newProfile.age,
+        gender: newProfile.gender,
+        height_cm: newProfile.height_cm,
+        weight_kg: newProfile.weight_kg,
+        activity_level: newProfile.activity_level,
+        goal: newProfile.goal,
+      };
+
+      if (existing) {
+        await supabase.from("user_profiles").update(profileRow).eq("user_id", user.id);
+      } else {
+        await supabase.from("user_profiles").insert({ user_id: user.id, ...profileRow });
+      }
+      setProfile(newProfile);
+
+      // Auto-update calorie goal from TDEE
+      const newGoals = { ...goals, calories: tdee };
+      await saveGoals(newGoals);
+
+      toast({ title: "Profile saved!", description: `Daily target set to ${tdee} kcal` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -219,7 +289,10 @@ const Dashboard = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">Today's Progress</CardTitle>
-              <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
+              <div className="flex items-center gap-1">
+                <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
+                <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
