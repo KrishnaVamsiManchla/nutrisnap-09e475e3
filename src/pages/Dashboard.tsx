@@ -14,6 +14,7 @@ import FoodLog from "@/components/FoodLog";
 import WaterTracker from "@/components/WaterTracker";
 import GoalsEditor from "@/components/GoalsEditor";
 import CalorieCalculator from "@/components/CalorieCalculator";
+import SmartFeedback from "@/components/SmartFeedback";
 
 interface NutritionData {
   food_name: string;
@@ -34,6 +35,7 @@ interface FoodEntry {
   protein_g: number;
   carbs_g: number;
   fat_g: number;
+  sugar_g: number;
   meal_type: string;
   created_at: string;
 }
@@ -305,6 +307,12 @@ const Dashboard = () => {
               goalMl={goals.water_ml}
               onAdd={addWater}
               onRemove={removeLastWater}
+            />
+            <SmartFeedback
+              entries={entries}
+              goals={{ calories: goals.calories, protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
+              waterMl={totalWaterMl}
+              waterGoalMl={goals.water_ml}
             />
           </CardContent>
         </Card>
