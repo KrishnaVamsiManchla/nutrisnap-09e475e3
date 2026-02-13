@@ -1,20 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
-import { Flame, LogOut, Camera, Keyboard } from "lucide-react";
+import { LogOut, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import DateHeader from "@/components/DateHeader";
+import CalorieRing from "@/components/CalorieRing";
+import MacroCards from "@/components/MacroCards";
+import QuickActions from "@/components/QuickActions";
+import MealLog from "@/components/MealLog";
+import WaterTracker from "@/components/WaterTracker";
+import SmartFeedback from "@/components/SmartFeedback";
+import GoalsEditor from "@/components/GoalsEditor";
+import CalorieCalculator from "@/components/CalorieCalculator";
 import FoodCamera from "@/components/FoodCamera";
 import ManualEntry from "@/components/ManualEntry";
 import NutritionResult from "@/components/NutritionResult";
-import DailySummary from "@/components/DailySummary";
-import FoodLog from "@/components/FoodLog";
-import WaterTracker from "@/components/WaterTracker";
-import GoalsEditor from "@/components/GoalsEditor";
-import CalorieCalculator from "@/components/CalorieCalculator";
-import SmartFeedback from "@/components/SmartFeedback";
 
 interface NutritionData {
   food_name: string;
@@ -68,6 +75,7 @@ const DEFAULT_GOALS: Goals = { calories: 2000, protein_g: 150, carbs_g: 250, fat
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [result, setResult] = useState<NutritionData | null>(null);
   const [saving, setSaving] = useState(false);
@@ -77,20 +85,33 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
-  const todayStart = useCallback(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d.toISOString();
+  // Dialog states
+  const [showManual, setShowManual] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [showVoice, setShowVoice] = useState(false);
+
+  const dayStart = useCallback((d: Date) => {
+    const start = new Date(d);
+    start.setHours(0, 0, 0, 0);
+    return start.toISOString();
+  }, []);
+
+  const dayEnd = useCallback((d: Date) => {
+    const end = new Date(d);
+    end.setHours(23, 59, 59, 999);
+    return end.toISOString();
   }, []);
 
   const loadEntries = useCallback(async () => {
     const { data } = await supabase
       .from("food_entries")
       .select("*")
-      .gte("created_at", todayStart())
+      .gte("created_at", dayStart(selectedDate))
+      .lte("created_at", dayEnd(selectedDate))
       .order("created_at", { ascending: false });
     if (data) setEntries(data as FoodEntry[]);
-  }, [todayStart]);
+  }, [selectedDate, dayStart, dayEnd]);
 
   const loadGoals = useCallback(async () => {
     if (!user) return;
@@ -114,10 +135,11 @@ const Dashboard = () => {
     const { data } = await supabase
       .from("water_entries")
       .select("*")
-      .gte("created_at", todayStart())
+      .gte("created_at", dayStart(selectedDate))
+      .lte("created_at", dayEnd(selectedDate))
       .order("created_at", { ascending: false });
     if (data) setWaterEntries(data as WaterEntry[]);
-  }, [todayStart]);
+  }, [selectedDate, dayStart, dayEnd]);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
@@ -154,7 +176,6 @@ const Dashboard = () => {
         .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
-
       if (existing) {
         await supabase.from("user_goals").update(newGoals).eq("user_id", user.id);
       } else {
@@ -178,7 +199,6 @@ const Dashboard = () => {
         .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
-
       const profileRow = {
         age: newProfile.age,
         gender: newProfile.gender,
@@ -187,18 +207,14 @@ const Dashboard = () => {
         activity_level: newProfile.activity_level,
         goal: newProfile.goal,
       };
-
       if (existing) {
         await supabase.from("user_profiles").update(profileRow).eq("user_id", user.id);
       } else {
         await supabase.from("user_profiles").insert({ user_id: user.id, ...profileRow });
       }
       setProfile(newProfile);
-
-      // Auto-update calorie goal from TDEE
       const newGoals = { ...goals, calories: tdee };
       await saveGoals(newGoals);
-
       toast({ title: "Profile saved!", description: `Daily target set to ${tdee} kcal` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -223,6 +239,14 @@ const Dashboard = () => {
     loadWater();
   };
 
+  const handleResult = (data: NutritionData) => {
+    setResult(data);
+    setShowManual(false);
+    setShowCamera(false);
+    setShowVoice(false);
+    setShowResult(true);
+  };
+
   const saveEntry = async (mealType: string) => {
     if (!result || !user) return;
     setSaving(true);
@@ -241,8 +265,9 @@ const Dashboard = () => {
         meal_type: mealType,
       });
       if (error) throw error;
-      toast({ title: "Saved!", description: `${result.food_name} added to your log.` });
+      toast({ title: "Saved!", description: `${result.food_name} added.` });
       setResult(null);
+      setShowResult(false);
       loadEntries();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -272,97 +297,116 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Flame className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <h1 className="text-lg font-bold tracking-tight">NutriSnap</h1>
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2">
+          <h1 className="text-lg font-bold tracking-tight">NutriSnap</h1>
+          <div className="flex items-center gap-1">
+            <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
+            <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={signOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={signOut}>
-            <LogOut className="h-4 w-4" />
-          </Button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-4 px-4 py-4 pb-8">
-        {/* Daily Summary */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Today's Progress</CardTitle>
-              <div className="flex items-center gap-1">
-                <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
-                <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <DailySummary
-              {...totals}
-              goals={{ calories: goals.calories, protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
-            />
-            <WaterTracker
-              currentMl={totalWaterMl}
-              goalMl={goals.water_ml}
-              onAdd={addWater}
-              onRemove={removeLastWater}
-            />
-            <SmartFeedback
-              entries={entries}
-              goals={{ calories: goals.calories, protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
-              waterMl={totalWaterMl}
-              waterGoalMl={goals.water_ml}
-            />
-          </CardContent>
-        </Card>
+      <main className="mx-auto max-w-lg space-y-6 px-4 py-5 pb-10">
+        {/* Date Navigation */}
+        <DateHeader date={selectedDate} onDateChange={setSelectedDate} />
 
-        {/* Add Food */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Add Food</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {result ? (
-              <NutritionResult
-                data={result}
-                onSave={saveEntry}
-                onDiscard={() => setResult(null)}
-                saving={saving}
-              />
-            ) : (
-              <Tabs defaultValue="camera" className="w-full">
-                <TabsList className="w-full">
-                  <TabsTrigger value="camera" className="flex-1 gap-1.5">
-                    <Camera className="h-3.5 w-3.5" />
-                    Photo
-                  </TabsTrigger>
-                  <TabsTrigger value="manual" className="flex-1 gap-1.5">
-                    <Keyboard className="h-3.5 w-3.5" />
-                    Type
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="camera">
-                  <FoodCamera onResult={setResult} />
-                </TabsContent>
-                <TabsContent value="manual">
-                  <ManualEntry onResult={setResult} />
-                </TabsContent>
-              </Tabs>
-            )}
-          </CardContent>
-        </Card>
+        {/* Calorie Ring */}
+        <div className="flex justify-center">
+          <CalorieRing consumed={totals.calories} target={goals.calories} />
+        </div>
 
-        {/* Food Log */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Today's Log</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FoodLog entries={entries} onDelete={deleteEntry} />
-          </CardContent>
-        </Card>
+        {/* Macro Summary Cards */}
+        <MacroCards
+          protein={totals.protein}
+          carbs={totals.carbs}
+          fat={totals.fat}
+          goals={{ protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
+        />
+
+        {/* Water */}
+        <div className="rounded-2xl bg-card border p-4">
+          <WaterTracker
+            currentMl={totalWaterMl}
+            goalMl={goals.water_ml}
+            onAdd={addWater}
+            onRemove={removeLastWater}
+          />
+        </div>
+
+        {/* Smart Feedback */}
+        <SmartFeedback
+          entries={entries}
+          goals={{ calories: goals.calories, protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
+          waterMl={totalWaterMl}
+          waterGoalMl={goals.water_ml}
+        />
+
+        {/* Quick Log Buttons */}
+        <QuickActions
+          onManual={() => setShowManual(true)}
+          onCamera={() => setShowCamera(true)}
+          onVoice={() => setShowVoice(true)}
+        />
+
+        {/* Meal Log */}
+        <div>
+          <h3 className="text-base font-semibold mb-3">Meals</h3>
+          <MealLog entries={entries} onDelete={deleteEntry} />
+        </div>
       </main>
+
+      {/* Manual Entry Dialog */}
+      <Dialog open={showManual} onOpenChange={setShowManual}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Food</DialogTitle>
+          </DialogHeader>
+          <ManualEntry onResult={handleResult} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Camera Dialog */}
+      <Dialog open={showCamera} onOpenChange={setShowCamera}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Scan with AI</DialogTitle>
+          </DialogHeader>
+          <FoodCamera onResult={handleResult} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Voice Log Dialog */}
+      <Dialog open={showVoice} onOpenChange={setShowVoice}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Voice Log</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            <p className="text-sm text-muted-foreground mb-3">Describe what you ate by voice</p>
+            <ManualEntry onResult={handleResult} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Result Dialog */}
+      <Dialog open={showResult} onOpenChange={(open) => { setShowResult(open); if (!open) setResult(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Nutrition Info</DialogTitle>
+          </DialogHeader>
+          {result && (
+            <NutritionResult
+              data={result}
+              onSave={saveEntry}
+              onDiscard={() => { setResult(null); setShowResult(false); }}
+              saving={saving}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
