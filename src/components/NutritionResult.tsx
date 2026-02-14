@@ -1,6 +1,6 @@
-import { Flame, Beef, Wheat, Droplets, Leaf, CandyCane, Zap } from "lucide-react";
+import { Flame, Beef, Wheat, Droplets, Leaf, CandyCane, Zap, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 
@@ -25,63 +25,122 @@ interface NutritionResultProps {
 
 const NutritionResult = ({ data, onSave, onDiscard, saving }: NutritionResultProps) => {
   const [mealType, setMealType] = useState("lunch");
+  const [edited, setEdited] = useState({
+    calories: Math.round(data.calories),
+    protein_g: Math.round(data.protein_g),
+    carbs_g: Math.round(data.carbs_g),
+    fat_g: Math.round(data.fat_g),
+  });
 
-  const macros = [
-    { label: "Calories", value: data.calories, unit: "kcal", icon: Flame, color: "text-orange-500" },
-    { label: "Protein", value: data.protein_g, unit: "g", icon: Beef, color: "text-red-500" },
-    { label: "Carbs", value: data.carbs_g, unit: "g", icon: Wheat, color: "text-amber-500" },
-    { label: "Fat", value: data.fat_g, unit: "g", icon: Droplets, color: "text-blue-500" },
-    { label: "Fiber", value: data.fiber_g, unit: "g", icon: Leaf, color: "text-green-500" },
-    { label: "Sugar", value: data.sugar_g, unit: "g", icon: CandyCane, color: "text-pink-500" },
-    { label: "Sodium", value: data.sodium_mg, unit: "mg", icon: Zap, color: "text-yellow-500" },
+  const updateField = (field: keyof typeof edited, value: string) => {
+    const num = parseInt(value) || 0;
+    setEdited((prev) => ({ ...prev, [field]: num }));
+  };
+
+  const macroItems = [
+    { label: "Protein", field: "protein_g" as const, unit: "g", icon: Beef, color: "hsl(var(--health-red))" },
+    { label: "Carbs", field: "carbs_g" as const, unit: "g", icon: Wheat, color: "hsl(var(--health-orange))" },
+    { label: "Fat", field: "fat_g" as const, unit: "g", icon: Droplets, color: "hsl(var(--health-blue))" },
+  ];
+
+  const detailItems = [
+    { label: "Fiber", value: Math.round(data.fiber_g), unit: "g", icon: Leaf },
+    { label: "Sugar", value: Math.round(data.sugar_g), unit: "g", icon: CandyCane },
+    { label: "Sodium", value: Math.round(data.sodium_mg), unit: "mg", icon: Zap },
   ];
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardContent className="p-4 space-y-4">
-        <div>
-          <h3 className="font-bold text-lg">{data.food_name}</h3>
-          {data.serving_size && (
-            <p className="text-sm text-muted-foreground">{data.serving_size}</p>
-          )}
-        </div>
+    <div className="space-y-5 animate-fade-in">
+      {/* Food name + serving */}
+      <div className="text-center">
+        <h3 className="text-lg font-bold">{data.food_name}</h3>
+        {data.serving_size && (
+          <p className="text-sm text-muted-foreground mt-0.5">{data.serving_size}</p>
+        )}
+      </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          {macros.map((m) => (
-            <div key={m.label} className="flex items-center gap-2 rounded-xl bg-background p-2.5">
-              <m.icon className={`h-4 w-4 ${m.color}`} />
-              <div>
-                <p className="text-xs text-muted-foreground">{m.label}</p>
-                <p className="font-semibold text-sm">
-                  {typeof m.value === "number" ? Math.round(m.value) : m.value} {m.unit}
-                </p>
-              </div>
+      {/* Editable calorie ring-like display */}
+      <div className="flex flex-col items-center gap-1 rounded-2xl bg-primary/5 border border-primary/10 p-5">
+        <Flame className="h-6 w-6 text-primary" />
+        <div className="flex items-baseline gap-1">
+          <Input
+            type="number"
+            value={edited.calories}
+            onChange={(e) => updateField("calories", e.target.value)}
+            className="w-24 text-center text-2xl font-bold border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+          />
+          <span className="text-sm text-muted-foreground font-medium">kcal</span>
+        </div>
+      </div>
+
+      {/* Editable macro cards */}
+      <div className="grid grid-cols-3 gap-2">
+        {macroItems.map((m) => (
+          <div key={m.label} className="flex flex-col items-center gap-1 rounded-2xl bg-muted/50 p-3">
+            <m.icon className="h-4 w-4" style={{ color: m.color }} />
+            <div className="flex items-baseline gap-0.5">
+              <Input
+                type="number"
+                value={edited[m.field]}
+                onChange={(e) => updateField(m.field, e.target.value)}
+                className="w-12 text-center text-sm font-semibold border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+              />
+              <span className="text-xs text-muted-foreground">{m.unit}</span>
             </div>
-          ))}
-        </div>
+            <span className="text-xs text-muted-foreground">{m.label}</span>
+          </div>
+        ))}
+      </div>
 
-        <Select value={mealType} onValueChange={setMealType}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="breakfast">🌅 Breakfast</SelectItem>
-            <SelectItem value="lunch">☀️ Lunch</SelectItem>
-            <SelectItem value="dinner">🌙 Dinner</SelectItem>
-            <SelectItem value="snack">🍿 Snack</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Detail row */}
+      <div className="flex justify-between rounded-2xl bg-muted/30 px-4 py-3">
+        {detailItems.map((d) => (
+          <div key={d.label} className="flex flex-col items-center gap-0.5">
+            <span className="text-xs text-muted-foreground">{d.label}</span>
+            <span className="text-sm font-semibold">{d.value}{d.unit}</span>
+          </div>
+        ))}
+      </div>
 
-        <div className="flex gap-2">
-          <Button onClick={onDiscard} variant="outline" className="flex-1">
-            Discard
-          </Button>
-          <Button onClick={() => onSave(mealType)} disabled={saving} className="flex-1">
-            {saving ? "Saving..." : "Save Entry"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Meal type select */}
+      <Select value={mealType} onValueChange={setMealType}>
+        <SelectTrigger className="rounded-xl">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="breakfast">🌅 Breakfast</SelectItem>
+          <SelectItem value="lunch">☀️ Lunch</SelectItem>
+          <SelectItem value="dinner">🌙 Dinner</SelectItem>
+          <SelectItem value="snack">🍿 Snack</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Disclaimer */}
+      <div className="flex items-start gap-2 rounded-xl bg-muted/40 px-3 py-2.5">
+        <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Estimates may vary. Adjust portions and values above if needed for accuracy.
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        <Button onClick={onDiscard} variant="outline" className="flex-1 rounded-xl">
+          Discard
+        </Button>
+        <Button
+          onClick={() => {
+            // Merge edited values back before saving
+            Object.assign(data, edited);
+            onSave(mealType);
+          }}
+          disabled={saving}
+          className="flex-1 rounded-xl"
+        >
+          {saving ? "Saving…" : "Confirm & Add"}
+        </Button>
+      </div>
+    </div>
   );
 };
 
