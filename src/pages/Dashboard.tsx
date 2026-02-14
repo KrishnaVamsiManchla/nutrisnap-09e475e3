@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { LogOut, Settings2 } from "lucide-react";
+import { LogOut, Settings2, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +75,7 @@ const DEFAULT_GOALS: Goals = { calories: 2000, protein_g: 150, carbs_g: 250, fat
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [entries, setEntries] = useState<FoodEntry[]>([]);
@@ -302,8 +304,8 @@ const Dashboard = () => {
           <div className="flex items-center gap-1">
             <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
             <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={signOut}>
-              <LogOut className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/profile")}>
+              <UserCircle className="h-4 w-4" />
             </Button>
           </div>
         </div>
