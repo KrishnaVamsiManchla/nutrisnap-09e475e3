@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { LogOut, Settings2, UserCircle } from "lucide-react";
+import { LogOut, Settings2, UserCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -304,6 +304,9 @@ const Dashboard = () => {
           <div className="flex items-center gap-1">
             <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
             <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/progress")}>
+              <TrendingUp className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/profile")}>
               <UserCircle className="h-4 w-4" />
             </Button>
