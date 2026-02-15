@@ -253,6 +253,9 @@ const Dashboard = () => {
     if (!result || !user) return;
     setSaving(true);
     try {
+      // Use selected date for the entry timestamp (noon of that day)
+      const entryDate = new Date(selectedDate);
+      entryDate.setHours(12, 0, 0, 0);
       const { error } = await supabase.from("food_entries").insert({
         user_id: user.id,
         food_name: result.food_name,
@@ -265,6 +268,7 @@ const Dashboard = () => {
         sodium_mg: result.sodium_mg,
         serving_size: result.serving_size,
         meal_type: mealType,
+        created_at: entryDate.toISOString(),
       });
       if (error) throw error;
       toast({ title: "Saved!", description: `${result.food_name} added.` });
