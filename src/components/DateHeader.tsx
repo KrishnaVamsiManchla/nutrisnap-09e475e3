@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { format, addDays, subDays, isToday } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,9 +17,32 @@ interface DateHeaderProps {
 
 const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
   const today = isToday(date);
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    const threshold = 50;
+    if (diff > threshold) {
+      // Swiped right → previous day
+      onDateChange(subDays(date, 1));
+    } else if (diff < -threshold && !today) {
+      // Swiped left → next day
+      onDateChange(addDays(date, 1));
+    }
+    touchStartX.current = null;
+  };
 
   return (
-    <div className="flex items-center justify-between">
+    <div
+      className="flex items-center justify-between"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <Button
         variant="ghost"
         size="icon"
