@@ -2,3 +2,6 @@ project_id = "avjjhsqkiosewmhlojvl"
 
 [functions.analyze-food]
 verify_jwt = false
+
+[functions.weekly-analysis]
+verify_jwt = false
