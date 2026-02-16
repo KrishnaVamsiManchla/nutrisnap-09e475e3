@@ -1,5 +1,6 @@
 import { Flame, Beef, Wheat, Droplets, Leaf, CandyCane, Zap, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MealSuggestions from "@/components/MealSuggestions";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
@@ -122,6 +123,15 @@ const NutritionResult = ({ data, onSave, onDiscard, saving }: NutritionResultPro
           Estimates may vary. Adjust portions and values above if needed for accuracy.
         </p>
       </div>
+
+      {/* Meal Swap Suggestions */}
+      <MealSuggestions
+        foodName={data.food_name}
+        calories={edited.calories}
+        proteinG={edited.protein_g}
+        carbsG={edited.carbs_g}
+        fatG={edited.fat_g}
+      />
 
       {/* Actions */}
       <div className="flex gap-2">
