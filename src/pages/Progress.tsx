@@ -26,6 +26,7 @@ import {
 } from "recharts";
 import { format, subDays, differenceInCalendarDays, parseISO, startOfDay, isAfter, isBefore, addDays } from "date-fns";
 import WeeklyAnalysis from "@/components/WeeklyAnalysis";
+import WeightProjection from "@/components/WeightProjection";
 
 interface WeightLog {
   id: string;
@@ -338,6 +339,9 @@ const Progress = () => {
             </div>
           )}
         </section>
+
+        {/* Weight Projection */}
+        <WeightProjection />
 
         {/* AI Weekly Analysis */}
         <WeeklyAnalysis />
