@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.weekly-analysis]
 verify_jwt = false
+
+[functions.meal-suggestions]
+verify_jwt = false
