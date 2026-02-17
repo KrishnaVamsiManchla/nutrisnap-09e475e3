@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, LogOut, Trash2, User, Flame, Beef } from "lucide-react";
+import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -312,6 +313,28 @@ const Profile = () => {
         <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl text-base">
           {saving ? "Saving…" : "Save Profile"}
         </Button>
+
+        {/* Subscription */}
+        <section className="rounded-2xl border bg-card p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Subscription</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Current Plan</span>
+              <Badge variant="outline" className="text-xs">Free</Badge>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            className="w-full justify-between gap-2"
+            onClick={() => navigate("/pricing")}
+          >
+            <div className="flex items-center gap-2">
+              <Crown className="h-4 w-4 text-primary" />
+              View Plans
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </section>
 
         {/* Account Actions */}
         <section className="rounded-2xl border bg-card p-4 space-y-3">
