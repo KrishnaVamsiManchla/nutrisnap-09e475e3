@@ -73,10 +73,12 @@ const SmartFeedback = ({ entries, goals, waterMl, waterGoalMl }: SmartFeedbackPr
     }
   }
 
-  // Calorie overshoot
-  if (totals.calories > goals.calories * 1.1) {
-    const over = Math.round(totals.calories - goals.calories);
-    tips.push({ icon: AlertTriangle, text: `You're ${over} kcal over your daily target. Consider a lighter next meal.`, type: "warning" });
+  // Calorie overshoot — supportive, no-shame language
+  const overBy = Math.round(totals.calories - goals.calories);
+  if (overBy >= 300) {
+    tips.push({ icon: TrendingUp, text: `You're ${overBy} kcal above target today — that's just data, not a setback. A slightly lighter meal tomorrow keeps the weekly average on track. Consistency beats perfection! 📊`, type: "info" });
+  } else if (overBy > 0 && totals.calories > goals.calories * 1.05) {
+    tips.push({ icon: TrendingUp, text: `Slightly over target by ${overBy} kcal — totally normal. One day doesn't define progress. 💪`, type: "info" });
   } else if (totals.calories >= goals.calories * 0.9 && totals.calories <= goals.calories * 1.05) {
     tips.push({ icon: ThumbsUp, text: "You're right on track with your calorie goal! 🎯", type: "success" });
   }
