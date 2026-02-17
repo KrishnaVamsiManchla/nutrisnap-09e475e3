@@ -27,6 +27,7 @@ import {
 import { format, subDays, differenceInCalendarDays, parseISO, startOfDay, isAfter, isBefore, addDays } from "date-fns";
 import WeeklyAnalysis from "@/components/WeeklyAnalysis";
 import WeightProjection from "@/components/WeightProjection";
+import UpgradeNudge from "@/components/UpgradeNudge";
 
 interface WeightLog {
   id: string;
@@ -229,6 +230,11 @@ const Progress = () => {
             <p className="text-sm text-muted-foreground">Logging streak</p>
           </div>
         </div>
+
+        {/* 7-day streak nudge */}
+        {streak >= 7 && (
+          <UpgradeNudge type="weekly-insights" />
+        )}
 
         {/* Weight Graph */}
         <section className="rounded-2xl border bg-card p-4 space-y-3">

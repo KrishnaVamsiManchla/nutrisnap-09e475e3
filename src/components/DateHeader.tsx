@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { format, addDays, subDays, isToday } from "date-fns";
+import { useRef, useState } from "react";
+import { format, addDays, subDays, isToday, differenceInCalendarDays } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import UpgradeNudge from "@/components/UpgradeNudge";
 
 interface DateHeaderProps {
   date: Date;
@@ -18,6 +19,10 @@ interface DateHeaderProps {
 const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
   const today = isToday(date);
   const touchStartX = useRef<number | null>(null);
+  const [historyNudgeDismissed, setHistoryNudgeDismissed] = useState(false);
+
+  const daysBack = differenceInCalendarDays(new Date(), date);
+  const showHistoryNudge = daysBack > 7 && !historyNudgeDismissed;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -39,7 +44,7 @@ const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
 
   return (
     <div
-      className="flex items-center justify-between"
+      className="relative flex items-center justify-between"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -83,6 +88,12 @@ const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
+
+      {showHistoryNudge && (
+        <div className="absolute left-0 right-0 top-full mt-2 px-4 z-20">
+          <UpgradeNudge type="full-history" onDismiss={() => setHistoryNudgeDismissed(true)} />
+        </div>
+      )}
     </div>
   );
 };
