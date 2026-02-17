@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { LogOut, Settings2, UserCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +23,7 @@ import CalorieCalculator from "@/components/CalorieCalculator";
 import FoodCamera from "@/components/FoodCamera";
 import ManualEntry from "@/components/ManualEntry";
 import NutritionResult from "@/components/NutritionResult";
-
+import UpgradeNudge from "@/components/UpgradeNudge";
 interface NutritionData {
   food_name: string;
   calories: number;
@@ -86,7 +86,7 @@ const Dashboard = () => {
   const [waterEntries, setWaterEntries] = useState<WaterEntry[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
-
+  const [nudgeDismissed, setNudgeDismissed] = useState<Record<string, boolean>>({});
   // Dialog states
   const [showManual, setShowManual] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
@@ -299,6 +299,10 @@ const Dashboard = () => {
 
   const totalWaterMl = waterEntries.reduce((sum, e) => sum + e.amount_ml, 0);
 
+  // Count manual entries today for nudge
+  const manualEntryCount = entries.length;
+  const showPhotoNudge = manualEntryCount >= 5 && !nudgeDismissed["photo-logging"];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -352,6 +356,11 @@ const Dashboard = () => {
           waterMl={totalWaterMl}
           waterGoalMl={goals.water_ml}
         />
+
+        {/* Contextual Upgrade Nudge — photo logging */}
+        {showPhotoNudge && (
+          <UpgradeNudge type="photo-logging" onDismiss={() => setNudgeDismissed(p => ({ ...p, "photo-logging": true }))} />
+        )}
 
         {/* Quick Log Buttons */}
         <QuickActions
