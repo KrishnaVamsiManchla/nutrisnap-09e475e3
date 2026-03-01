@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight } from "lucide-react";
+import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight, Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LANGUAGES } from "@/i18n";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
