@@ -83,6 +83,7 @@ const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
   const [form, setForm] = useState<ProfileForm>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
