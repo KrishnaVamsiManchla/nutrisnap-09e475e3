@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight } from "lucide-react";
+import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight, Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LANGUAGES } from "@/i18n";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,6 +83,7 @@ const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
   const [form, setForm] = useState<ProfileForm>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -311,8 +314,38 @@ const Profile = () => {
         </section>
 
         <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl text-base">
-          {saving ? "Saving…" : "Save Profile"}
+          {saving ? t("common.loading") : t("profile.saveProfile")}
         </Button>
+
+        {/* Language */}
+        <section className="rounded-2xl border bg-card p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            {t("profile.language")}
+          </h2>
+          <Select
+            value={i18n.language}
+            onValueChange={(lang) => {
+              i18n.changeLanguage(lang);
+              localStorage.setItem("app_language", lang);
+              if (user) {
+                supabase.from("user_profiles").update({ language: lang }).eq("user_id", user.id).then(() => {});
+              }
+            }}
+          >
+            <SelectTrigger className="rounded-xl">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGES.map((l) => (
+                <SelectItem key={l.code} value={l.code}>
+                  <span className="font-medium">{l.native}</span>
+                  <span className="text-muted-foreground ml-2 text-xs">({l.label})</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </section>
 
         {/* Subscription */}
         <section className="rounded-2xl border bg-card p-4 space-y-3">
