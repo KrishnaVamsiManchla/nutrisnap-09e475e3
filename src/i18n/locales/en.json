@@ -1,0 +1,187 @@
+{
+  "app": {
+    "name": "NutriSnap"
+  },
+  "nav": {
+    "back": "Back",
+    "profile": "Profile",
+    "progress": "Progress",
+    "pricing": "Pricing"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "pleaseWait": "Please wait...",
+    "signInDesc": "Sign in to track your nutrition",
+    "signUpDesc": "Create an account to get started",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "checkEmail": "Check your email",
+    "confirmLink": "We sent you a confirmation link."
+  },
+  "dashboard": {
+    "meals": "Meals",
+    "addFood": "Add Food",
+    "scanAI": "Scan with AI",
+    "voiceLog": "Voice Log",
+    "describeFood": "Describe what you ate by voice",
+    "nutritionInfo": "Nutrition Info",
+    "today": "Today"
+  },
+  "food": {
+    "whatDidYouEat": "What did you eat? (e.g. 'chicken breast with rice')",
+    "quantity": "Quantity (e.g. '200g', '1 plate', '2 cups')",
+    "analyzing": "Analyzing...",
+    "lookUpNutrition": "Look Up Nutrition",
+    "analysisFailed": "Analysis failed",
+    "takePhoto": "Take a Photo",
+    "pointCamera": "Point your camera at your meal",
+    "uploadGallery": "Upload from Gallery",
+    "portionSize": "Approximate portion size (optional)",
+    "portionPlaceholder": "e.g. '2 servings', '300g', '1 bowl'",
+    "identifyingFood": "Identifying food…",
+    "analyzeAI": "Analyze with AI",
+    "aiDetect": "AI will detect food items and estimate nutrition",
+    "saved": "Saved!",
+    "added": "added.",
+    "noMeals": "No meals logged yet",
+    "addFirstMeal": "Use the buttons above to add your first meal"
+  },
+  "macros": {
+    "calories": "Calories",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "fiber": "Fiber",
+    "sugar": "Sugar",
+    "sodium": "Sodium",
+    "kcal": "kcal",
+    "remaining": "{{count}} kcal remaining",
+    "over": "{{count}} kcal over"
+  },
+  "water": {
+    "title": "Water",
+    "glasses": "glasses",
+    "undo": "Undo"
+  },
+  "meals": {
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snack": "Snacks"
+  },
+  "result": {
+    "discard": "Discard",
+    "confirmAdd": "Confirm & Add",
+    "saving": "Saving…",
+    "disclaimer": "Estimates may vary. Adjust portions and values above if needed for accuracy."
+  },
+  "goals": {
+    "dailyGoals": "Daily Goals",
+    "saveGoals": "Save Goals",
+    "goalsSaved": "Goals saved!"
+  },
+  "calculator": {
+    "title": "Personalized Calorie Calculator",
+    "smartCalculator": "Smart Calculator",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "age": "Age",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)",
+    "activityLevel": "Activity Level",
+    "goal": "Goal",
+    "bmr": "BMR",
+    "tdee": "TDEE",
+    "target": "Target",
+    "applyGoals": "Apply to Daily Goals"
+  },
+  "profile": {
+    "title": "Profile",
+    "yourName": "Your name",
+    "bodyStats": "Body Stats",
+    "currentWeight": "Current Weight (kg)",
+    "goalWeight": "Goal Weight (kg)",
+    "activityGoal": "Activity & Goal",
+    "goalType": "Goal Type",
+    "fatLoss": "Fat Loss",
+    "maintain": "Maintain",
+    "muscleGain": "Muscle Gain",
+    "yourTargets": "Your Targets",
+    "dailyCalories": "Daily Calories",
+    "adjustment": "Adjustment",
+    "saveProfile": "Save Profile",
+    "profileSaved": "Profile saved!",
+    "dailyTarget": "Daily target: {{calories}} kcal",
+    "subscription": "Subscription",
+    "currentPlan": "Current Plan",
+    "viewPlans": "View Plans",
+    "account": "Account",
+    "deleteAccount": "Delete Account",
+    "deleteConfirm": "Delete Account?",
+    "deleteWarning": "This action cannot be undone. All your data will be permanently deleted.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "language": "Language"
+  },
+  "progress": {
+    "title": "Progress",
+    "loggingStreak": "Logging streak",
+    "days": "{{count}} day",
+    "days_plural": "{{count}} days",
+    "weightProgress": "Weight Progress",
+    "logWeight": "Log Weight",
+    "editWeight": "Edit Weight",
+    "weightKg": "Weight (kg)",
+    "date": "Date",
+    "save": "Save",
+    "log2Weights": "Log at least 2 weights to see your trend",
+    "calorieTrend": "Calorie Trend (7-Day Avg)",
+    "logFewDays": "Log a few days of food to see trends",
+    "weeklyMacro": "Weekly Macro Averages",
+    "noMacroData": "No data yet for macro trends",
+    "weeklySummary": "Weekly Summary",
+    "avgCalories": "Avg Calories",
+    "avgProtein": "Avg Protein",
+    "weightLogged": "Weight logged!",
+    "updated": "Updated!",
+    "entryExists": "Entry exists",
+    "entryExistsDesc": "A weight log for this date already exists. Edit it instead."
+  },
+  "coach": {
+    "title": "Coach Tips",
+    "lowProtein": "You're low on protein today. Try adding chicken, eggs, or Greek yogurt.",
+    "greatProtein": "Great protein intake today! 💪",
+    "highSugar": "High sugar intake detected ({{amount}}g). Watch out for hidden sugars.",
+    "heavyMeal": "Your {{meal}} is {{pct}}% of total calories. Try spreading meals more evenly.",
+    "overTarget": "You're {{amount}} kcal above target today — that's just data, not a setback. A slightly lighter meal tomorrow keeps the weekly average on track. Consistency beats perfection! 📊",
+    "slightlyOver": "Slightly over target by {{amount}} kcal — totally normal. One day doesn't define progress. 💪",
+    "onTrack": "You're right on track with your calorie goal! 🎯",
+    "highFat": "Fat intake is above target. Opt for leaner options for the rest of the day.",
+    "drinkWater": "Don't forget to drink water! You're behind on hydration. 💧"
+  },
+  "voice": {
+    "startListening": "Tap to speak",
+    "listening": "Listening...",
+    "stopListening": "Stop",
+    "speakNow": "Say what you ate",
+    "notSupported": "Speech recognition is not supported in this browser.",
+    "readSummary": "Read Summary Aloud"
+  },
+  "nudge": {
+    "photoLogging": "Save time with AI photo logging.",
+    "weeklyInsights": "Get deeper weekly insights with Premium.",
+    "fullHistory": "Unlock full tracking history."
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Loading…",
+    "remove": "Remove",
+    "free": "Free",
+    "premium": "Premium"
+  }
+}
