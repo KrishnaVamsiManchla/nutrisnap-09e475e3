@@ -328,7 +328,7 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-8 px-4 py-6 pb-12">
+      <main className="mx-auto max-w-lg space-y-10 px-4 py-8 pb-14">
         {/* Date Navigation */}
         <DateHeader date={selectedDate} onDateChange={setSelectedDate} />
 
@@ -346,7 +346,7 @@ const Dashboard = () => {
         />
 
         {/* Water */}
-        <div className="rounded-2xl bg-card border p-4 shadow-sm">
+        <div className="rounded-2xl bg-card p-5 shadow-sm">
           <WaterTracker
             currentMl={totalWaterMl}
             goalMl={goals.water_ml}
