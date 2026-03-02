@@ -24,6 +24,8 @@ import FoodCamera from "@/components/FoodCamera";
 import ManualEntry from "@/components/ManualEntry";
 import NutritionResult from "@/components/NutritionResult";
 import UpgradeNudge from "@/components/UpgradeNudge";
+import PremiumBadge from "@/components/PremiumBadge";
+import LockedFeature from "@/components/LockedFeature";
 interface NutritionData {
   food_name: string;
   calories: number;
@@ -92,6 +94,9 @@ const Dashboard = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
+
+  // TODO: replace with real subscription check
+  const isPremium = false;
 
   const dayStart = useCallback((d: Date) => {
     const start = new Date(d);
@@ -309,7 +314,8 @@ const Dashboard = () => {
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2">
           <h1 className="text-lg font-bold tracking-tight">NutriSnap</h1>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            <PremiumBadge isPremium={isPremium} />
             <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
             <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/progress")}>
@@ -392,7 +398,9 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle>Scan with AI</DialogTitle>
           </DialogHeader>
-          <FoodCamera onResult={handleResult} />
+          <LockedFeature isPremium={isPremium} featureName="AI Photo Tracking">
+            <FoodCamera onResult={handleResult} />
+          </LockedFeature>
         </DialogContent>
       </Dialog>
 

@@ -28,6 +28,7 @@ import { format, subDays, differenceInCalendarDays, parseISO, startOfDay, isAfte
 import WeeklyAnalysis from "@/components/WeeklyAnalysis";
 import WeightProjection from "@/components/WeightProjection";
 import UpgradeNudge from "@/components/UpgradeNudge";
+import LockedFeature from "@/components/LockedFeature";
 
 interface WeightLog {
   id: string;
@@ -44,6 +45,9 @@ interface DailyCalories {
 }
 
 const Progress = () => {
+  // TODO: replace with real subscription check
+  const isPremium = false;
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -347,10 +351,14 @@ const Progress = () => {
         </section>
 
         {/* Weight Projection */}
-        <WeightProjection />
+        <LockedFeature isPremium={isPremium} featureName="Weight Prediction">
+          <WeightProjection />
+        </LockedFeature>
 
         {/* AI Weekly Analysis */}
-        <WeeklyAnalysis />
+        <LockedFeature isPremium={isPremium} featureName="Weekly Analysis">
+          <WeeklyAnalysis />
+        </LockedFeature>
 
         {/* Weekly Summary */}
         <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
