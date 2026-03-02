@@ -28,6 +28,7 @@ import { format, subDays, differenceInCalendarDays, parseISO, startOfDay, isAfte
 import WeeklyAnalysis from "@/components/WeeklyAnalysis";
 import WeightProjection from "@/components/WeightProjection";
 import UpgradeNudge from "@/components/UpgradeNudge";
+import LockedFeature from "@/components/LockedFeature";
 
 interface WeightLog {
   id: string;
