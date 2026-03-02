@@ -311,24 +311,24 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2">
-          <h1 className="text-lg font-bold tracking-tight">NutriSnap</h1>
+      <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2.5">
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">NutriSnap</h1>
           <div className="flex items-center gap-1.5">
             <PremiumBadge isPremium={isPremium} />
             <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
             <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} />
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/progress")}>
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-4 w-4" strokeWidth={1.5} />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/profile")}>
-              <UserCircle className="h-4 w-4" />
+              <UserCircle className="h-4 w-4" strokeWidth={1.5} />
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-6 px-4 py-5 pb-10">
+      <main className="mx-auto max-w-lg space-y-8 px-4 py-6 pb-12">
         {/* Date Navigation */}
         <DateHeader date={selectedDate} onDateChange={setSelectedDate} />
 
@@ -346,7 +346,7 @@ const Dashboard = () => {
         />
 
         {/* Water */}
-        <div className="rounded-2xl bg-card border p-4">
+        <div className="rounded-2xl bg-card border p-4 shadow-sm">
           <WaterTracker
             currentMl={totalWaterMl}
             goalMl={goals.water_ml}
@@ -377,7 +377,7 @@ const Dashboard = () => {
 
         {/* Meal Log */}
         <div>
-          <h3 className="text-base font-semibold mb-3">Meals</h3>
+          <h3 className="text-sm font-semibold mb-3 text-foreground">Meals</h3>
           <MealLog entries={entries} onDelete={deleteEntry} />
         </div>
       </main>
