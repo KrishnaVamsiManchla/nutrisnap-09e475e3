@@ -351,10 +351,14 @@ const Progress = () => {
         </section>
 
         {/* Weight Projection */}
-        <WeightProjection />
+        <LockedFeature isPremium={isPremium} featureName="Weight Prediction">
+          <WeightProjection />
+        </LockedFeature>
 
         {/* AI Weekly Analysis */}
-        <WeeklyAnalysis />
+        <LockedFeature isPremium={isPremium} featureName="Weekly Analysis">
+          <WeeklyAnalysis />
+        </LockedFeature>
 
         {/* Weekly Summary */}
         <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
