@@ -45,6 +45,9 @@ interface DailyCalories {
 }
 
 const Progress = () => {
+  // TODO: replace with real subscription check
+  const isPremium = false;
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
