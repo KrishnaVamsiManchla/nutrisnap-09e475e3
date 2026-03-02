@@ -21,7 +21,7 @@ const MacroCards = ({ protein, carbs, fat, goals }: MacroCardsProps) => {
         return (
           <div
             key={m.label}
-            className="rounded-2xl bg-card border p-3.5 flex flex-col items-center gap-2.5 shadow-sm"
+            className="rounded-2xl bg-card p-3.5 flex flex-col items-center gap-2.5 shadow-sm"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full" style={{ backgroundColor: m.bgColor }}>
               <m.icon className="h-4 w-4" style={{ color: m.color }} strokeWidth={1.5} />
