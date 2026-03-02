@@ -346,7 +346,7 @@ const Dashboard = () => {
         />
 
         {/* Water */}
-        <div className="rounded-2xl bg-card border p-4 shadow-sm">
+        <div className="rounded-2xl bg-card p-5 shadow-sm">
           <WaterTracker
             currentMl={totalWaterMl}
             goalMl={goals.water_ml}

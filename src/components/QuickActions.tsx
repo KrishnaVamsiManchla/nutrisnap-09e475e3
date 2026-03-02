@@ -20,7 +20,7 @@ const QuickActions = ({ onManual, onCamera, onVoice }: QuickActionsProps) => {
         <Button
           key={a.label}
           variant="outline"
-          className="h-auto flex-col gap-2.5 py-5 rounded-2xl border bg-card hover:bg-accent transition-all shadow-sm"
+          className="h-auto flex-col gap-2.5 py-5 rounded-2xl border-0 bg-card hover:bg-accent transition-all shadow-sm"
           onClick={a.onClick}
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/8">

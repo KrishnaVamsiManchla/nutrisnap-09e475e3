@@ -27,7 +27,7 @@ const MacroCards = ({ protein, carbs, fat, goals }: MacroCardsProps) => {
               <m.icon className="h-4 w-4" style={{ color: m.color }} strokeWidth={1.5} />
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold leading-none">{Math.round(m.value)}g</p>
+              <p className="text-lg font-medium leading-none">{Math.round(m.value)}g</p>
               <p className="text-[10px] text-muted-foreground mt-1">/ {m.goal}g</p>
             </div>
             {/* Mini progress bar */}
