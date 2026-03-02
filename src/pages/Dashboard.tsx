@@ -398,7 +398,9 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle>Scan with AI</DialogTitle>
           </DialogHeader>
-          <FoodCamera onResult={handleResult} />
+          <LockedFeature isPremium={isPremium} featureName="AI Photo Tracking">
+            <FoodCamera onResult={handleResult} />
+          </LockedFeature>
         </DialogContent>
       </Dialog>
 
