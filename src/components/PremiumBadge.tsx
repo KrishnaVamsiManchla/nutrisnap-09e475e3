@@ -20,12 +20,10 @@ const PremiumBadge = ({ isPremium }: PremiumBadgeProps) => {
   return (
     <button
       onClick={() => navigate("/pricing")}
-      className="group relative flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 transition-all hover:bg-amber-500/20 active:scale-95"
+      className="group relative flex items-center gap-1 rounded-full bg-primary/8 px-2.5 py-1 text-[11px] font-semibold text-primary transition-all hover:bg-primary/15 active:scale-95"
     >
-      <Crown className="h-3.5 w-3.5 animate-[pulse_3s_ease-in-out_1]" />
+      <Crown className="h-3.5 w-3.5" strokeWidth={1.5} />
       <span>PRO</span>
-      {/* Subtle glow — plays once */}
-      <span className="pointer-events-none absolute inset-0 rounded-full animate-[ping_2s_ease-out_1] bg-amber-400/20" />
     </button>
   );
 };

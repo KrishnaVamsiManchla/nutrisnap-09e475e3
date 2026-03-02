@@ -73,7 +73,7 @@ const MealLog = ({ entries, onDelete }: MealLogProps) => {
                 return (
                   <div
                     key={entry.id}
-                    className="rounded-xl bg-card border overflow-hidden transition-all"
+                    className="rounded-xl bg-card border overflow-hidden transition-all shadow-sm"
                   >
                     <button
                       onClick={() => toggleEntry(entry.id)}

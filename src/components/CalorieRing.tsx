@@ -33,7 +33,7 @@ const CalorieRing = ({ consumed, target, size = 160 }: CalorieRingProps) => {
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke={isOver ? "hsl(var(--health-red))" : "hsl(var(--health-green))"}
+            stroke={isOver ? "hsl(var(--health-red))" : "hsl(var(--primary))"}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
