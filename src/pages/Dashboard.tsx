@@ -95,6 +95,9 @@ const Dashboard = () => {
   const [showResult, setShowResult] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
 
+  // TODO: replace with real subscription check
+  const isPremium = false;
+
   const dayStart = useCallback((d: Date) => {
     const start = new Date(d);
     start.setHours(0, 0, 0, 0);
