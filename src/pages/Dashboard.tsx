@@ -24,6 +24,8 @@ import FoodCamera from "@/components/FoodCamera";
 import ManualEntry from "@/components/ManualEntry";
 import NutritionResult from "@/components/NutritionResult";
 import UpgradeNudge from "@/components/UpgradeNudge";
+import PremiumBadge from "@/components/PremiumBadge";
+import LockedFeature from "@/components/LockedFeature";
 interface NutritionData {
   food_name: string;
   calories: number;
