@@ -197,7 +197,7 @@ const Profile = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-10">
+      <main className="mx-auto max-w-lg space-y-8 px-4 py-8 pb-12">
         {/* Avatar + Name */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
