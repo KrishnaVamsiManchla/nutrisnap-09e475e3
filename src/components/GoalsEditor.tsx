@@ -1,8 +1,9 @@
-import { useState, useRef } from "react";
-import { Settings2, X, Droplets } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Settings2, X, Droplets, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Drawer,
   DrawerContent,
@@ -24,6 +25,8 @@ interface GoalsEditorProps {
   onSave: (goals: Goals) => void;
   saving?: boolean;
   suggestedCalories?: number;
+  weightKg?: number;
+  goal?: "cut" | "maintain" | "bulk";
 }
 
 type DraftValues = Record<keyof Goals, string>;
@@ -52,13 +55,38 @@ function toDraftStrings(g: Goals): DraftValues {
   };
 }
 
+function calcAutoMacros(calories: number, weightKg: number, goal: string) {
+  // Protein: g/kg based on goal
+  let proteinPerKg = 1.8;
+  if (goal === "cut") proteinPerKg = 2.0;
+  else if (goal === "maintain") proteinPerKg = 1.6;
+  // else bulk = 1.8
+
+  let proteinG = Math.round(weightKg * proteinPerKg);
+  // Minimum: 0.8g/kg
+  proteinG = Math.max(proteinG, Math.round(weightKg * 0.8));
+
+  // Fat: 25% of calories, minimum 20%
+  let fatCals = calories * 0.25;
+  if (fatCals < calories * 0.2) fatCals = calories * 0.2;
+  const fatG = Math.round(fatCals / 9);
+
+  // Carbs: remaining
+  const proteinCals = proteinG * 4;
+  const remainingCals = Math.max(0, calories - proteinCals - fatCals);
+  const carbsG = Math.round(remainingCals / 4);
+
+  return { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG };
+}
+
 const ALL_KEYS: (keyof Goals)[] = ["calories", "protein_g", "carbs_g", "fat_g", "water_ml"];
 
-const GoalsEditor = ({ goals, onSave, saving, suggestedCalories }: GoalsEditorProps) => {
+const GoalsEditor = ({ goals, onSave, saving, suggestedCalories, weightKg, goal: userGoal }: GoalsEditorProps) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DraftValues>(() => toDraftStrings(goals));
   const [errors, setErrors] = useState<Partial<Record<keyof Goals, string>>>({});
   const [focusedField, setFocusedField] = useState<keyof Goals | null>(null);
+  const [autoBalance, setAutoBalance] = useState(true);
   const inputRefs = useRef<Partial<Record<keyof Goals, HTMLInputElement | null>>>({});
 
   const handleOpen = (isOpen: boolean) => {
@@ -66,11 +94,28 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories }: GoalsEditorPr
       setDraft(toDraftStrings(goals));
       setErrors({});
       setFocusedField(null);
+      setAutoBalance(true);
     }
     setOpen(isOpen);
   };
 
   const hasChanges = ALL_KEYS.some((k) => draft[k] !== String(goals[k]));
+
+  // Auto-balance when calories change and toggle is ON
+  const applyAutoBalance = useCallback(
+    (cals: string) => {
+      const calNum = Number(cals);
+      if (!calNum || !weightKg) return;
+      const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
+      setDraft((prev) => ({
+        ...prev,
+        protein_g: String(macros.protein_g),
+        carbs_g: String(macros.carbs_g),
+        fat_g: String(macros.fat_g),
+      }));
+    },
+    [weightKg, userGoal]
+  );
 
   const handleSave = () => {
     const newErrors: Partial<Record<keyof Goals, string>> = {};
@@ -97,10 +142,40 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories }: GoalsEditorPr
     if (value !== "" && !/^\d*\.?\d*$/.test(value)) return;
     setDraft((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+
+    // If calories changed and auto-balance is on, recalculate macros
+    if (key === "calories" && autoBalance && weightKg) {
+      const calNum = Number(value);
+      if (calNum > 0) {
+        const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
+        setDraft((prev) => ({
+          ...prev,
+          [key]: value,
+          protein_g: String(macros.protein_g),
+          carbs_g: String(macros.carbs_g),
+          fat_g: String(macros.fat_g),
+        }));
+      }
+    }
+
+    // If user manually edits a macro field, disable auto-balance
+    if ((key === "protein_g" || key === "carbs_g" || key === "fat_g") && autoBalance) {
+      setAutoBalance(false);
+    }
+  };
+
+  const handleToggleAutoBalance = (checked: boolean) => {
+    setAutoBalance(checked);
+    if (checked && draft.calories && weightKg) {
+      applyAutoBalance(draft.calories);
+    }
   };
 
   const clearField = (key: keyof Goals) => {
     setDraft((prev) => ({ ...prev, [key]: "" }));
+    if ((key === "protein_g" || key === "carbs_g" || key === "fat_g") && autoBalance) {
+      setAutoBalance(false);
+    }
     inputRefs.current[key]?.focus();
   };
 
@@ -124,8 +199,6 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories }: GoalsEditorPr
       <p className="text-[11px] text-destructive/70 pl-0.5 animate-fade-in">{errors[field]}</p>
     );
   };
-
-  const suggested = suggestedCalories ?? Math.round(goals.calories * 1.0);
 
   return (
     <Drawer open={open} onOpenChange={handleOpen}>
@@ -188,9 +261,36 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories }: GoalsEditorPr
 
             {/* Section 2: Macros */}
             <section className="space-y-4">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Macros
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Macros
+                </Label>
+                {/* Auto-balance status tag */}
+                {weightKg ? (
+                  autoBalance ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground/70 bg-muted/60 px-2 py-0.5 rounded-full">
+                      <Sparkles className="h-2.5 w-2.5" />
+                      Auto-balanced
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-muted-foreground/50">
+                      Manual mode
+                    </span>
+                  )
+                ) : null}
+              </div>
+
+              {/* Auto-balance toggle */}
+              {weightKg ? (
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-[13px] text-foreground/80">Auto-balance macros</span>
+                  <Switch
+                    checked={autoBalance}
+                    onCheckedChange={handleToggleAutoBalance}
+                  />
+                </div>
+              ) : null}
+
               <div className="space-y-3">
                 {MACRO_FIELDS.map((f) => (
                   <div key={f.key} className="space-y-1">
@@ -221,7 +321,9 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories }: GoalsEditorPr
                 ))}
               </div>
               <p className="text-[11px] text-muted-foreground/60">
-                Adjust automatically based on calories.
+                {autoBalance && weightKg
+                  ? "Macros adjust automatically when calories change."
+                  : "Manually set your macro targets."}
               </p>
             </section>
 
