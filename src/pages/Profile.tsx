@@ -348,8 +348,8 @@ const Profile = () => {
         </section>
 
         {/* Subscription */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Subscription</h2>
+        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Subscription</h2>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Current Plan</span>
