@@ -197,7 +197,7 @@ const Profile = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-10">
+      <main className="mx-auto max-w-lg space-y-8 px-4 py-8 pb-12">
         {/* Avatar + Name */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
@@ -213,8 +213,8 @@ const Profile = () => {
         </div>
 
         {/* Body Stats */}
-        <section className="rounded-2xl border bg-card p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Body Stats</h2>
+        <section className="rounded-2xl bg-card p-5 space-y-4" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Body Stats</h2>
 
           <div className="space-y-2">
             <Label>Gender</Label>
@@ -255,8 +255,8 @@ const Profile = () => {
         </section>
 
         {/* Activity & Goals */}
-        <section className="rounded-2xl border bg-card p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Activity & Goal</h2>
+        <section className="rounded-2xl bg-card p-5 space-y-4" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Activity & Goal</h2>
 
           <div className="space-y-1.5">
             <Label className="text-muted-foreground text-xs">Activity Level</Label>
@@ -288,8 +288,8 @@ const Profile = () => {
         </section>
 
         {/* Calculated Targets */}
-        <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Your Targets</h2>
+        <section className="rounded-2xl bg-primary/5 p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Targets</h2>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-3 rounded-xl bg-background p-3">
               <Flame className="h-5 w-5 text-primary shrink-0" />
@@ -318,8 +318,8 @@ const Profile = () => {
         </Button>
 
         {/* Language */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Globe className="h-4 w-4" />
             {t("profile.language")}
           </h2>
@@ -348,8 +348,8 @@ const Profile = () => {
         </section>
 
         {/* Subscription */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Subscription</h2>
+        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Subscription</h2>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Current Plan</span>
@@ -370,8 +370,8 @@ const Profile = () => {
         </section>
 
         {/* Account Actions */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Account</h2>
+        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Account</h2>
           <Button
             variant="outline"
             className="w-full justify-start gap-2"
