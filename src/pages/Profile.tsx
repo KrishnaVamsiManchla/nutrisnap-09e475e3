@@ -318,8 +318,8 @@ const Profile = () => {
         </Button>
 
         {/* Language */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Globe className="h-4 w-4" />
             {t("profile.language")}
           </h2>
