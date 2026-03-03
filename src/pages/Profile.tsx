@@ -288,8 +288,8 @@ const Profile = () => {
         </section>
 
         {/* Calculated Targets */}
-        <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Your Targets</h2>
+        <section className="rounded-2xl bg-primary/5 p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Targets</h2>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-3 rounded-xl bg-background p-3">
               <Flame className="h-5 w-5 text-primary shrink-0" />
