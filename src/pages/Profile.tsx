@@ -255,8 +255,8 @@ const Profile = () => {
         </section>
 
         {/* Activity & Goals */}
-        <section className="rounded-2xl border bg-card p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Activity & Goal</h2>
+        <section className="rounded-2xl bg-card p-5 space-y-4" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Activity & Goal</h2>
 
           <div className="space-y-1.5">
             <Label className="text-muted-foreground text-xs">Activity Level</Label>
