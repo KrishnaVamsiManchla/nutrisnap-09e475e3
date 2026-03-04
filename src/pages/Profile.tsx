@@ -406,6 +406,7 @@ const Profile = () => {
         </section>
       </main>
       <BottomNav />
+    </div>
   );
 };
 
