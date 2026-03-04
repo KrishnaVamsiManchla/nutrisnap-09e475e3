@@ -405,8 +405,8 @@ const Profile = () => {
           </AlertDialog>
         </section>
       </main>
+      <BottomNav />
     </div>
-  );
 };
 
 export default Profile;

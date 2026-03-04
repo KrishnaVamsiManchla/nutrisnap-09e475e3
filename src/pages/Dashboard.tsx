@@ -406,10 +406,7 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle>Voice Log</DialogTitle>
           </DialogHeader>
-          <div className="py-4 text-center">
-            <p className="text-sm text-muted-foreground mb-3">Describe what you ate by voice</p>
-            <ManualEntry onResult={handleResult} />
-          </div>
+          <VoiceEntry onResult={handleResult} />
         </DialogContent>
       </Dialog>
 
