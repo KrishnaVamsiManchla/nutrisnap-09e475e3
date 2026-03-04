@@ -166,9 +166,7 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories, weightKg, goal:
 
   const handleToggleAutoBalance = (checked: boolean) => {
     setAutoBalance(checked);
-    if (checked && draft.calories && weightKg) {
-      applyAutoBalance(draft.calories);
-    }
+    // useEffect will handle recalculation when autoBalance becomes true
   };
 
   const clearField = (key: keyof Goals) => {
