@@ -442,6 +442,7 @@ const Progress = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <BottomNav />
     </div>
   );
 };
