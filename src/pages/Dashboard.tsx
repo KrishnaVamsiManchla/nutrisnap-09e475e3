@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { LogOut, Settings2, UserCircle, TrendingUp } from "lucide-react";
+import { LogOut, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,7 @@ import DateHeader from "@/components/DateHeader";
 import CalorieRing from "@/components/CalorieRing";
 import MacroCards from "@/components/MacroCards";
 import QuickActions from "@/components/QuickActions";
+import BottomNav from "@/components/BottomNav";
 import MealLog from "@/components/MealLog";
 import WaterTracker from "@/components/WaterTracker";
 import SmartFeedback from "@/components/SmartFeedback";
@@ -318,17 +319,11 @@ const Dashboard = () => {
             <PremiumBadge isPremium={isPremium} />
             <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
             <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} weightKg={profile?.weight_kg} goal={profile?.goal} />
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/progress")}>
-              <TrendingUp className="h-4 w-4" strokeWidth={1.5} />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/profile")}>
-              <UserCircle className="h-4 w-4" strokeWidth={1.5} />
-            </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-10 px-4 py-8 pb-14">
+      <main className="mx-auto max-w-lg space-y-10 px-4 py-8 pb-28">
         {/* Date Navigation */}
         <DateHeader date={selectedDate} onDateChange={setSelectedDate} />
 
@@ -433,6 +428,9 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Bottom Navigation */}
+      <BottomNav onCameraPress={() => setShowCamera(true)} />
     </div>
   );
 };
