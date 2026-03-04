@@ -101,21 +101,21 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories, weightKg, goal:
 
   const hasChanges = ALL_KEYS.some((k) => draft[k] !== String(goals[k]));
 
-  // Auto-balance when calories change and toggle is ON
-  const applyAutoBalance = useCallback(
-    (cals: string) => {
-      const calNum = Number(cals);
-      if (!calNum || !weightKg) return;
-      const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
-      setDraft((prev) => ({
-        ...prev,
-        protein_g: String(macros.protein_g),
-        carbs_g: String(macros.carbs_g),
-        fat_g: String(macros.fat_g),
-      }));
-    },
-    [weightKg, userGoal]
-  );
+  // Re-run auto-balance whenever calories, weightKg, or goal change (while toggle is ON)
+  useEffect(() => {
+    if (!autoBalance || !weightKg || !open) return;
+    const calNum = Number(draft.calories);
+    if (calNum <= 0) return;
+    const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
+    setDraft((prev) => ({
+      ...prev,
+      protein_g: String(macros.protein_g),
+      carbs_g: String(macros.carbs_g),
+      fat_g: String(macros.fat_g),
+    }));
+    // Only react to these specific dependencies — draft.calories is included
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.calories, weightKg, userGoal, autoBalance, open]);
 
   const handleSave = () => {
     const newErrors: Partial<Record<keyof Goals, string>> = {};
