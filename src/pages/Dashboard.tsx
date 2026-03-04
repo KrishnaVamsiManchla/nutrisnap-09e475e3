@@ -428,6 +428,9 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Bottom Navigation */}
+      <BottomNav onCameraPress={() => setShowCamera(true)} />
     </div>
   );
 };
