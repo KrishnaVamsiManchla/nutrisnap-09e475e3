@@ -1,15 +1,15 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, TrendingUp, Users, UserCircle, Camera } from "lucide-react";
+import { Home, TrendingUp, Target, UserCircle, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
-  onCameraPress: () => void;
+  onCameraPress?: () => void;
 }
 
 const tabs = [
   { path: "/", label: "Home", icon: Home },
   { path: "/progress", label: "Progress", icon: TrendingUp },
-  { path: "/groups", label: "Groups", icon: Users },
+  { path: "/goals", label: "Daily Goals", icon: Target },
   { path: "/profile", label: "Profile", icon: UserCircle },
 ];
 
