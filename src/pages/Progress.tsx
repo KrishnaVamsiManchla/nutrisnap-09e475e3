@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import BottomNav from "@/components/BottomNav";
 import { ArrowLeft, Plus, Scale, Flame, Beef, Wheat, Droplets, TrendingUp, Trophy, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -223,7 +224,7 @@ const Progress = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-10">
+      <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-28">
         {/* Streak */}
         <div className="flex items-center gap-3 rounded-2xl border bg-card p-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
@@ -441,6 +442,7 @@ const Progress = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <BottomNav />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import BottomNav from "@/components/BottomNav";
 import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "@/i18n";
@@ -197,7 +198,7 @@ const Profile = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-8 px-4 py-8 pb-12">
+      <main className="mx-auto max-w-lg space-y-8 px-4 py-8 pb-28">
         {/* Avatar + Name */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
@@ -404,6 +405,7 @@ const Profile = () => {
           </AlertDialog>
         </section>
       </main>
+      <BottomNav />
     </div>
   );
 };

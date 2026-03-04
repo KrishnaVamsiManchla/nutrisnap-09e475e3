@@ -23,6 +23,7 @@ import GoalsEditor from "@/components/GoalsEditor";
 import CalorieCalculator from "@/components/CalorieCalculator";
 import FoodCamera from "@/components/FoodCamera";
 import ManualEntry from "@/components/ManualEntry";
+import VoiceEntry from "@/components/VoiceEntry";
 import NutritionResult from "@/components/NutritionResult";
 import UpgradeNudge from "@/components/UpgradeNudge";
 import PremiumBadge from "@/components/PremiumBadge";
@@ -405,10 +406,7 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle>Voice Log</DialogTitle>
           </DialogHeader>
-          <div className="py-4 text-center">
-            <p className="text-sm text-muted-foreground mb-3">Describe what you ate by voice</p>
-            <ManualEntry onResult={handleResult} />
-          </div>
+          <VoiceEntry onResult={handleResult} />
         </DialogContent>
       </Dialog>
 
