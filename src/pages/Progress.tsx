@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import BottomNav from "@/components/BottomNav";
 import { ArrowLeft, Plus, Scale, Flame, Beef, Wheat, Droplets, TrendingUp, Trophy, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
