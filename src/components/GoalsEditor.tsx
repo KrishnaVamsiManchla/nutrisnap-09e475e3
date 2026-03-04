@@ -143,21 +143,6 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories, weightKg, goal:
     setDraft((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
 
-    // If calories changed and auto-balance is on, recalculate macros
-    if (key === "calories" && autoBalance && weightKg) {
-      const calNum = Number(value);
-      if (calNum > 0) {
-        const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
-        setDraft((prev) => ({
-          ...prev,
-          [key]: value,
-          protein_g: String(macros.protein_g),
-          carbs_g: String(macros.carbs_g),
-          fat_g: String(macros.fat_g),
-        }));
-      }
-    }
-
     // If user manually edits a macro field, disable auto-balance
     if ((key === "protein_g" || key === "carbs_g" || key === "fat_g") && autoBalance) {
       setAutoBalance(false);
