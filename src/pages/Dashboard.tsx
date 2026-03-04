@@ -15,6 +15,7 @@ import DateHeader from "@/components/DateHeader";
 import CalorieRing from "@/components/CalorieRing";
 import MacroCards from "@/components/MacroCards";
 import QuickActions from "@/components/QuickActions";
+import BottomNav from "@/components/BottomNav";
 import MealLog from "@/components/MealLog";
 import WaterTracker from "@/components/WaterTracker";
 import SmartFeedback from "@/components/SmartFeedback";
