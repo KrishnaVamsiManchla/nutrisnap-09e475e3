@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Settings2, X, Droplets, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,21 +101,21 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories, weightKg, goal:
 
   const hasChanges = ALL_KEYS.some((k) => draft[k] !== String(goals[k]));
 
-  // Auto-balance when calories change and toggle is ON
-  const applyAutoBalance = useCallback(
-    (cals: string) => {
-      const calNum = Number(cals);
-      if (!calNum || !weightKg) return;
-      const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
-      setDraft((prev) => ({
-        ...prev,
-        protein_g: String(macros.protein_g),
-        carbs_g: String(macros.carbs_g),
-        fat_g: String(macros.fat_g),
-      }));
-    },
-    [weightKg, userGoal]
-  );
+  // Re-run auto-balance whenever calories, weightKg, or goal change (while toggle is ON)
+  useEffect(() => {
+    if (!autoBalance || !weightKg || !open) return;
+    const calNum = Number(draft.calories);
+    if (calNum <= 0) return;
+    const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
+    setDraft((prev) => ({
+      ...prev,
+      protein_g: String(macros.protein_g),
+      carbs_g: String(macros.carbs_g),
+      fat_g: String(macros.fat_g),
+    }));
+    // Only react to these specific dependencies — draft.calories is included
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.calories, weightKg, userGoal, autoBalance, open]);
 
   const handleSave = () => {
     const newErrors: Partial<Record<keyof Goals, string>> = {};
@@ -143,21 +143,6 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories, weightKg, goal:
     setDraft((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
 
-    // If calories changed and auto-balance is on, recalculate macros
-    if (key === "calories" && autoBalance && weightKg) {
-      const calNum = Number(value);
-      if (calNum > 0) {
-        const macros = calcAutoMacros(calNum, weightKg, userGoal || "maintain");
-        setDraft((prev) => ({
-          ...prev,
-          [key]: value,
-          protein_g: String(macros.protein_g),
-          carbs_g: String(macros.carbs_g),
-          fat_g: String(macros.fat_g),
-        }));
-      }
-    }
-
     // If user manually edits a macro field, disable auto-balance
     if ((key === "protein_g" || key === "carbs_g" || key === "fat_g") && autoBalance) {
       setAutoBalance(false);
@@ -166,9 +151,7 @@ const GoalsEditor = ({ goals, onSave, saving, suggestedCalories, weightKg, goal:
 
   const handleToggleAutoBalance = (checked: boolean) => {
     setAutoBalance(checked);
-    if (checked && draft.calories && weightKg) {
-      applyAutoBalance(draft.calories);
-    }
+    // useEffect will handle recalculation when autoBalance becomes true
   };
 
   const clearField = (key: keyof Goals) => {
