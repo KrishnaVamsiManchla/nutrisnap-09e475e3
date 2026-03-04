@@ -323,7 +323,7 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-10 px-4 py-8 pb-14">
+      <main className="mx-auto max-w-lg space-y-10 px-4 py-8 pb-28">
         {/* Date Navigation */}
         <DateHeader date={selectedDate} onDateChange={setSelectedDate} />
 
