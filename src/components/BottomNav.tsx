@@ -21,14 +21,16 @@ const BottomNav = ({ onCameraPress }: BottomNavProps) => {
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]">
       <div className="relative mx-auto w-full max-w-lg px-4 pb-2">
         {/* FAB Camera Button */}
-        <button
-          onClick={onCameraPress}
-          className="absolute -top-5 right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform duration-150 active:scale-90"
-          style={{ backgroundColor: "#111111" }}
-          aria-label="AI Camera"
-        >
-          <Camera className="h-6 w-6 text-white" strokeWidth={1.5} />
-        </button>
+        {onCameraPress && (
+          <button
+            onClick={onCameraPress}
+            className="absolute -top-5 right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform duration-150 active:scale-90"
+            style={{ backgroundColor: "#111111" }}
+            aria-label="AI Camera"
+          >
+            <Camera className="h-6 w-6 text-white" strokeWidth={1.5} />
+          </button>
+        )}
 
         {/* Nav Bar */}
         <nav
