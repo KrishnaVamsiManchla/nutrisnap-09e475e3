@@ -23,6 +23,7 @@ import GoalsEditor from "@/components/GoalsEditor";
 import CalorieCalculator from "@/components/CalorieCalculator";
 import FoodCamera from "@/components/FoodCamera";
 import ManualEntry from "@/components/ManualEntry";
+import VoiceEntry from "@/components/VoiceEntry";
 import NutritionResult from "@/components/NutritionResult";
 import UpgradeNudge from "@/components/UpgradeNudge";
 import PremiumBadge from "@/components/PremiumBadge";
