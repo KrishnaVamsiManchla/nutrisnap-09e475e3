@@ -319,12 +319,6 @@ const Dashboard = () => {
             <PremiumBadge isPremium={isPremium} />
             <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
             <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} weightKg={profile?.weight_kg} goal={profile?.goal} />
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/progress")}>
-              <TrendingUp className="h-4 w-4" strokeWidth={1.5} />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/profile")}>
-              <UserCircle className="h-4 w-4" strokeWidth={1.5} />
-            </Button>
           </div>
         </div>
       </header>
