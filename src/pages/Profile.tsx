@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import BottomNav from "@/components/BottomNav";
 import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "@/i18n";
