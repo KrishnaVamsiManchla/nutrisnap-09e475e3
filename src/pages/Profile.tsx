@@ -406,7 +406,7 @@ const Profile = () => {
         </section>
       </main>
       <BottomNav />
-    </div>
+  );
 };
 
 export default Profile;
