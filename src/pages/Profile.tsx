@@ -1,16 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import BottomNav from "@/components/BottomNav";
-import { ArrowLeft, LogOut, Trash2, User, Flame, Beef, Crown, ChevronRight, Globe } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { LANGUAGES } from "@/i18n";
+import { LogOut, Trash2, User, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -18,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,14 +28,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const ACTIVITY_MULTIPLIERS: Record<string, number> = {
-  sedentary: 1.2,
-  light: 1.375,
-  moderate: 1.55,
-  active: 1.725,
-  very_active: 1.9,
-};
-
 const ACTIVITY_LABELS: Record<string, string> = {
   sedentary: "Sedentary (little/no exercise)",
   light: "Light (1–3 days/week)",
@@ -46,17 +35,6 @@ const ACTIVITY_LABELS: Record<string, string> = {
   active: "Active (6–7 days/week)",
   very_active: "Very Active (2× daily)",
 };
-
-const GOAL_LABELS: Record<string, string> = {
-  cut: "Fat Loss",
-  maintain: "Maintain",
-  bulk: "Muscle Gain",
-};
-
-function calcBMR(gender: string, weight: number, height: number, age: number) {
-  if (gender === "male") return 10 * weight + 6.25 * height - 5 * age + 5;
-  return 10 * weight + 6.25 * height - 5 * age - 161;
-}
 
 interface ProfileForm {
   name: string;
@@ -66,7 +44,6 @@ interface ProfileForm {
   weight_kg: number;
   goal_weight_kg: number;
   activity_level: "sedentary" | "light" | "moderate" | "active" | "very_active";
-  goal: "cut" | "maintain" | "bulk";
 }
 
 const DEFAULT_FORM: ProfileForm = {
@@ -77,14 +54,12 @@ const DEFAULT_FORM: ProfileForm = {
   weight_kg: 70,
   goal_weight_kg: 65,
   activity_level: "moderate",
-  goal: "maintain",
 };
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t, i18n } = useTranslation();
   const [form, setForm] = useState<ProfileForm>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -105,21 +80,12 @@ const Profile = () => {
         weight_kg: Number(data.weight_kg) || 70,
         goal_weight_kg: Number((data as any).goal_weight_kg) || 65,
         activity_level: (data.activity_level as ProfileForm["activity_level"]) ?? "moderate",
-        goal: (data.goal as ProfileForm["goal"]) ?? "maintain",
       });
     }
     setLoaded(true);
   }, [user]);
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
-
-  const bmr = calcBMR(form.gender, form.weight_kg, form.height_cm, form.age);
-  const tdee = bmr * (ACTIVITY_MULTIPLIERS[form.activity_level] || 1.2);
-  const calorieTarget =
-    form.goal === "cut" ? Math.round(tdee - 400) : form.goal === "bulk" ? Math.round(tdee + 300) : Math.round(tdee);
-  const proteinTarget = Math.round(form.weight_kg * 2);
+  useEffect(() => { loadProfile(); }, [loadProfile]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -133,33 +99,14 @@ const Profile = () => {
         weight_kg: form.weight_kg,
         goal_weight_kg: form.goal_weight_kg,
         activity_level: form.activity_level,
-        goal: form.goal,
       };
-      const { data: existing } = await supabase
-        .from("user_profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data: existing } = await supabase.from("user_profiles").select("id").eq("user_id", user.id).maybeSingle();
       if (existing) {
         await supabase.from("user_profiles").update(row).eq("user_id", user.id);
       } else {
         await supabase.from("user_profiles").insert({ user_id: user.id, ...row });
       }
-
-      // Also update goals
-      const goals = { calories: calorieTarget, protein_g: proteinTarget };
-      const { data: existingGoals } = await supabase
-        .from("user_goals")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (existingGoals) {
-        await supabase.from("user_goals").update(goals).eq("user_id", user.id);
-      } else {
-        await supabase.from("user_goals").insert({ user_id: user.id, ...goals });
-      }
-
-      toast({ title: "Profile saved!", description: `Daily target: ${calorieTarget} kcal` });
+      toast({ title: "Profile saved!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -168,7 +115,6 @@ const Profile = () => {
   };
 
   const handleDeleteAccount = async () => {
-    // Sign out - actual account deletion would need a backend function
     toast({ title: "Account deletion requested", description: "You've been signed out. Contact support to complete deletion." });
     await signOut();
   };
@@ -186,19 +132,13 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2">
-          <button onClick={() => navigate("/")} className="flex items-center gap-1 text-sm font-medium">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
-          <h1 className="text-lg font-bold">Profile</h1>
-          <div className="w-12" />
+      <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-lg items-center justify-center px-4 py-2.5">
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">Profile</h1>
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-8 px-4 py-8 pb-28">
+      <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-28">
         {/* Avatar + Name */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
@@ -213,12 +153,25 @@ const Profile = () => {
           <p className="text-sm text-muted-foreground">{user?.email}</p>
         </div>
 
-        {/* Body Stats */}
-        <section className="rounded-2xl bg-card p-5 space-y-4" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Body Stats</h2>
+        {/* Invite Friends */}
+        <section className="rounded-2xl bg-card p-4 shadow-sm">
+          <button className="flex w-full items-center gap-3 active:scale-[0.98] transition-transform">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Share2 className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-medium text-foreground">Invite Friends</p>
+              <p className="text-xs text-muted-foreground">Share NutriSnap with friends</p>
+            </div>
+          </button>
+        </section>
+
+        {/* Personal Details */}
+        <section className="rounded-2xl bg-card p-5 space-y-4 shadow-sm">
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Personal Details</h2>
 
           <div className="space-y-2">
-            <Label>Gender</Label>
+            <Label className="text-xs text-muted-foreground">Gender</Label>
             <RadioGroup
               value={form.gender}
               onValueChange={(v) => update("gender", v as "male" | "female")}
@@ -253,11 +206,6 @@ const Profile = () => {
               <Input type="number" value={form.goal_weight_kg} onChange={(e) => update("goal_weight_kg", Number(e.target.value) || 0)} />
             </div>
           </div>
-        </section>
-
-        {/* Activity & Goals */}
-        <section className="rounded-2xl bg-card p-5 space-y-4" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Activity & Goal</h2>
 
           <div className="space-y-1.5">
             <Label className="text-muted-foreground text-xs">Activity Level</Label>
@@ -272,106 +220,14 @@ const Profile = () => {
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-muted-foreground text-xs">Goal Type</Label>
-            <Select value={form.goal} onValueChange={(v) => update("goal", v as ProfileForm["goal"])}>
-              <SelectTrigger className="rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(GOAL_LABELS).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </section>
 
-        {/* Calculated Targets */}
-        <section className="rounded-2xl bg-primary/5 p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Targets</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-3 rounded-xl bg-background p-3">
-              <Flame className="h-5 w-5 text-primary shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Daily Calories</p>
-                <p className="text-lg font-bold">{calorieTarget}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-xl bg-background p-3">
-              <Beef className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--health-red))" }} />
-              <div>
-                <p className="text-xs text-muted-foreground">Protein</p>
-                <p className="text-lg font-bold">{proteinTarget}g</p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-lg bg-background px-3 py-2 text-xs text-muted-foreground space-y-0.5">
-            <div className="flex justify-between"><span>BMR</span><span className="font-medium">{Math.round(bmr)} kcal</span></div>
-            <div className="flex justify-between"><span>TDEE</span><span className="font-medium">{Math.round(tdee)} kcal</span></div>
-            <div className="flex justify-between"><span>Adjustment</span><span className="font-medium">{form.goal === "cut" ? "−400" : form.goal === "bulk" ? "+300" : "0"} kcal</span></div>
-          </div>
-        </section>
-
-        <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl text-base">
-          {saving ? t("common.loading") : t("profile.saveProfile")}
+        <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl text-sm font-medium shadow-sm">
+          {saving ? "Saving…" : "Save Profile"}
         </Button>
 
-        {/* Language */}
-        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            {t("profile.language")}
-          </h2>
-          <Select
-            value={i18n.language}
-            onValueChange={(lang) => {
-              i18n.changeLanguage(lang);
-              localStorage.setItem("app_language", lang);
-              if (user) {
-                supabase.from("user_profiles").update({ language: lang }).eq("user_id", user.id).then(() => {});
-              }
-            }}
-          >
-            <SelectTrigger className="rounded-xl">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((l) => (
-                <SelectItem key={l.code} value={l.code}>
-                  <span className="font-medium">{l.native}</span>
-                  <span className="text-muted-foreground ml-2 text-xs">({l.label})</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </section>
-
-        {/* Subscription */}
-        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Subscription</h2>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Current Plan</span>
-              <Badge variant="outline" className="text-xs">Free</Badge>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full justify-between gap-2"
-            onClick={() => navigate("/pricing")}
-          >
-            <div className="flex items-center gap-2">
-              <Crown className="h-4 w-4 text-primary" />
-              View Plans
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Button>
-        </section>
-
         {/* Account Actions */}
-        <section className="rounded-2xl bg-card p-5 space-y-3" style={{ boxShadow: '0px 6px 20px rgba(0,0,0,0.04)' }}>
+        <section className="rounded-2xl bg-card p-5 space-y-3 shadow-sm">
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Account</h2>
           <Button
             variant="outline"
@@ -405,6 +261,7 @@ const Profile = () => {
           </AlertDialog>
         </section>
       </main>
+
       <BottomNav />
     </div>
   );

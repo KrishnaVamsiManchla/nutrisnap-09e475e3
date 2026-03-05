@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { LogOut, Settings2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useCallback } from "react";
+import { Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,15 +18,14 @@ import BottomNav from "@/components/BottomNav";
 import MealLog from "@/components/MealLog";
 import WaterTracker from "@/components/WaterTracker";
 import SmartFeedback from "@/components/SmartFeedback";
-import GoalsEditor from "@/components/GoalsEditor";
-import CalorieCalculator from "@/components/CalorieCalculator";
 import FoodCamera from "@/components/FoodCamera";
 import ManualEntry from "@/components/ManualEntry";
 import VoiceEntry from "@/components/VoiceEntry";
 import NutritionResult from "@/components/NutritionResult";
-import UpgradeNudge from "@/components/UpgradeNudge";
 import PremiumBadge from "@/components/PremiumBadge";
 import LockedFeature from "@/components/LockedFeature";
+import GoalSummaryCard from "@/components/GoalSummaryCard";
+
 interface NutritionData {
   food_name: string;
   calories: number;
@@ -65,7 +63,8 @@ interface ProfileData {
   gender: "male" | "female";
   height_cm: number;
   weight_kg: number;
-  activity_level: "sedentary" | "light" | "moderate" | "active" | "very_active";
+  goal_weight_kg: number;
+  activity_level: string;
   goal: "cut" | "maintain" | "bulk";
 }
 
@@ -75,10 +74,14 @@ interface WaterEntry {
   created_at: string;
 }
 
+const ACTIVITY_MULTIPLIERS: Record<string, number> = {
+  sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9,
+};
+
 const DEFAULT_GOALS: Goals = { calories: 2000, protein_g: 150, carbs_g: 250, fat_g: 65, water_ml: 2500 };
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -86,18 +89,14 @@ const Dashboard = () => {
   const [result, setResult] = useState<NutritionData | null>(null);
   const [saving, setSaving] = useState(false);
   const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS);
-  const [savingGoals, setSavingGoals] = useState(false);
   const [waterEntries, setWaterEntries] = useState<WaterEntry[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [nudgeDismissed, setNudgeDismissed] = useState<Record<string, boolean>>({});
-  // Dialog states
+
   const [showManual, setShowManual] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
 
-  // TODO: replace with real subscription check
   const isPremium = false;
 
   const dayStart = useCallback((d: Date) => {
@@ -124,19 +123,9 @@ const Dashboard = () => {
 
   const loadGoals = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("user_goals")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const { data } = await supabase.from("user_goals").select("*").eq("user_id", user.id).maybeSingle();
     if (data) {
-      setGoals({
-        calories: data.calories,
-        protein_g: data.protein_g,
-        carbs_g: data.carbs_g,
-        fat_g: data.fat_g,
-        water_ml: data.water_ml,
-      });
+      setGoals({ calories: data.calories, protein_g: data.protein_g, carbs_g: data.carbs_g, fat_g: data.fat_g, water_ml: data.water_ml });
     }
   }, [user]);
 
@@ -152,18 +141,15 @@ const Dashboard = () => {
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const { data } = await supabase.from("user_profiles").select("*").eq("user_id", user.id).maybeSingle();
     if (data) {
       setProfile({
         age: data.age ?? 25,
         gender: (data.gender as "male" | "female") ?? "male",
         height_cm: Number(data.height_cm) || 175,
         weight_kg: Number(data.weight_kg) || 70,
-        activity_level: (data.activity_level as ProfileData["activity_level"]) ?? "moderate",
+        goal_weight_kg: Number(data.goal_weight_kg) || 65,
+        activity_level: data.activity_level ?? "moderate",
         goal: (data.goal as ProfileData["goal"]) ?? "maintain",
       });
     }
@@ -175,62 +161,6 @@ const Dashboard = () => {
     loadWater();
     loadProfile();
   }, [loadEntries, loadGoals, loadWater, loadProfile]);
-
-  const saveGoals = async (newGoals: Goals) => {
-    if (!user) return;
-    setSavingGoals(true);
-    try {
-      const { data: existing } = await supabase
-        .from("user_goals")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (existing) {
-        await supabase.from("user_goals").update(newGoals).eq("user_id", user.id);
-      } else {
-        await supabase.from("user_goals").insert({ user_id: user.id, ...newGoals });
-      }
-      setGoals(newGoals);
-      toast({ title: "Goals saved!" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setSavingGoals(false);
-    }
-  };
-
-  const saveProfile = async (newProfile: ProfileData, tdee: number) => {
-    if (!user) return;
-    setSavingProfile(true);
-    try {
-      const { data: existing } = await supabase
-        .from("user_profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      const profileRow = {
-        age: newProfile.age,
-        gender: newProfile.gender,
-        height_cm: newProfile.height_cm,
-        weight_kg: newProfile.weight_kg,
-        activity_level: newProfile.activity_level,
-        goal: newProfile.goal,
-      };
-      if (existing) {
-        await supabase.from("user_profiles").update(profileRow).eq("user_id", user.id);
-      } else {
-        await supabase.from("user_profiles").insert({ user_id: user.id, ...profileRow });
-      }
-      setProfile(newProfile);
-      const newGoals = { ...goals, calories: tdee };
-      await saveGoals(newGoals);
-      toast({ title: "Profile saved!", description: `Daily target set to ${tdee} kcal` });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setSavingProfile(false);
-    }
-  };
 
   const addWater = async (ml: number) => {
     if (!user) return;
@@ -260,7 +190,6 @@ const Dashboard = () => {
     if (!result || !user) return;
     setSaving(true);
     try {
-      // Use selected date for the entry timestamp (noon of that day)
       const entryDate = new Date(selectedDate);
       entryDate.setHours(12, 0, 0, 0);
       const { error } = await supabase.from("food_entries").insert({
@@ -306,9 +235,15 @@ const Dashboard = () => {
 
   const totalWaterMl = waterEntries.reduce((sum, e) => sum + e.amount_ml, 0);
 
-  // Count manual entries today for nudge
-  const manualEntryCount = entries.length;
-  const showPhotoNudge = manualEntryCount >= 5 && !nudgeDismissed["photo-logging"];
+  // TDEE for goal summary
+  const tdee = profile
+    ? (function () {
+        const bmr = profile.gender === "male"
+          ? 10 * profile.weight_kg + 6.25 * profile.height_cm - 5 * profile.age + 5
+          : 10 * profile.weight_kg + 6.25 * profile.height_cm - 5 * profile.age - 161;
+        return bmr * (ACTIVITY_MULTIPLIERS[profile.activity_level] || 1.2);
+      })()
+    : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -318,28 +253,41 @@ const Dashboard = () => {
           <h1 className="text-lg font-semibold tracking-tight text-foreground">NutriSnap</h1>
           <div className="flex items-center gap-1.5">
             <PremiumBadge isPremium={isPremium} />
-            <CalorieCalculator profile={profile} onSave={saveProfile} saving={savingProfile} />
-            <GoalsEditor goals={goals} onSave={saveGoals} saving={savingGoals} weightKg={profile?.weight_kg} goal={profile?.goal} />
+            <button
+              onClick={() => navigate("/settings")}
+              className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-muted active:scale-95"
+            >
+              <Settings className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+            </button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-lg space-y-10 px-4 py-8 pb-28">
-        {/* Date Navigation */}
         <DateHeader date={selectedDate} onDateChange={setSelectedDate} />
 
-        {/* Calorie Ring */}
         <div className="flex justify-center">
           <CalorieRing consumed={totals.calories} target={goals.calories} />
         </div>
 
-        {/* Macro Summary Cards */}
         <MacroCards
           protein={totals.protein}
           carbs={totals.carbs}
           fat={totals.fat}
           goals={{ protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
         />
+
+        {/* Goal Summary */}
+        {profile && (
+          <GoalSummaryCard
+            goal={profile.goal}
+            currentWeight={profile.weight_kg}
+            targetWeight={profile.goal_weight_kg}
+            weeklyDeficitKcal={(tdee - goals.calories) * 7}
+            tdee={tdee}
+            calories={goals.calories}
+          />
+        )}
 
         {/* Water */}
         <div className="rounded-2xl bg-card p-5 shadow-sm">
@@ -351,7 +299,6 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Smart Feedback */}
         <SmartFeedback
           entries={entries}
           goals={{ calories: goals.calories, protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
@@ -359,63 +306,45 @@ const Dashboard = () => {
           waterGoalMl={goals.water_ml}
         />
 
-        {/* Contextual Upgrade Nudge — photo logging */}
-        {showPhotoNudge && (
-          <UpgradeNudge type="photo-logging" onDismiss={() => setNudgeDismissed(p => ({ ...p, "photo-logging": true }))} />
-        )}
-
-        {/* Quick Log Buttons */}
         <QuickActions
           onManual={() => setShowManual(true)}
           onCamera={() => setShowCamera(true)}
           onVoice={() => setShowVoice(true)}
         />
 
-        {/* Meal Log */}
         <div>
           <h3 className="text-sm font-semibold mb-3 text-foreground">Meals</h3>
           <MealLog entries={entries} onDelete={deleteEntry} />
         </div>
       </main>
 
-      {/* Manual Entry Dialog */}
+      {/* Dialogs */}
       <Dialog open={showManual} onOpenChange={setShowManual}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Add Food</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Add Food</DialogTitle></DialogHeader>
           <ManualEntry onResult={handleResult} />
         </DialogContent>
       </Dialog>
 
-      {/* Camera Dialog */}
       <Dialog open={showCamera} onOpenChange={setShowCamera}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Scan with AI</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Scan with AI</DialogTitle></DialogHeader>
           <LockedFeature isPremium={isPremium} featureName="AI Photo Tracking">
             <FoodCamera onResult={handleResult} />
           </LockedFeature>
         </DialogContent>
       </Dialog>
 
-      {/* Voice Log Dialog */}
       <Dialog open={showVoice} onOpenChange={setShowVoice}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Voice Log</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Voice Log</DialogTitle></DialogHeader>
           <VoiceEntry onResult={handleResult} />
         </DialogContent>
       </Dialog>
 
-      {/* Result Dialog */}
       <Dialog open={showResult} onOpenChange={(open) => { setShowResult(open); if (!open) setResult(null); }}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Nutrition Info</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Nutrition Info</DialogTitle></DialogHeader>
           {result && (
             <NutritionResult
               data={result}
@@ -427,7 +356,6 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Bottom Navigation */}
       <BottomNav onCameraPress={() => setShowCamera(true)} />
     </div>
   );

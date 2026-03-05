@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { Target, Sparkles, Clock, TrendingDown, TrendingUp, Minus, Droplets, X } from "lucide-react";
+import { Target, Sparkles, Clock, TrendingDown, TrendingUp, Minus, Droplets, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -30,11 +29,7 @@ interface ProfileData {
 }
 
 const ACTIVITY_MULTIPLIERS: Record<string, number> = {
-  sedentary: 1.2,
-  light: 1.375,
-  moderate: 1.55,
-  active: 1.725,
-  very_active: 1.9,
+  sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9,
 };
 
 const GOAL_OPTIONS: { value: GoalType; label: string; icon: typeof TrendingDown }[] = [
@@ -59,21 +54,11 @@ function calcGoalCalories(tdee: number, goal: GoalType) {
 }
 
 function calcAutoMacros(calories: number, weightKg: number, goal: GoalType) {
-  let proteinPerKg = 1.8;
-  if (goal === "cut") proteinPerKg = 2.0;
-  else if (goal === "maintain") proteinPerKg = 1.6;
-
-  let proteinG = Math.round(weightKg * proteinPerKg);
-  proteinG = Math.max(proteinG, Math.round(weightKg * 0.8));
-
-  let fatCals = calories * 0.25;
-  if (fatCals < calories * 0.2) fatCals = calories * 0.2;
+  const proteinPerKg = goal === "cut" ? 2.0 : goal === "bulk" ? 1.8 : 1.6;
+  const proteinG = Math.max(Math.round(weightKg * proteinPerKg), Math.round(weightKg * 0.8));
+  const fatCals = Math.max(calories * 0.25, calories * 0.2);
   const fatG = Math.round(fatCals / 9);
-
-  const proteinCals = proteinG * 4;
-  const remainingCals = Math.max(0, calories - proteinCals - fatCals);
-  const carbsG = Math.round(remainingCals / 4);
-
+  const carbsG = Math.round(Math.max(0, calories - proteinG * 4 - fatCals) / 4);
   return { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG };
 }
 
@@ -81,13 +66,11 @@ const Goals = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [goals, setGoals] = useState<Goals>({ calories: 2000, protein_g: 150, carbs_g: 250, fat_g: 65, water_ml: 2500 });
   const [selectedGoal, setSelectedGoal] = useState<GoalType>("maintain");
-  const [autoBalance, setAutoBalance] = useState(true);
+  const [manualMode, setManualMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  // Editable draft values
   const [draftCalories, setDraftCalories] = useState("");
   const [draftProtein, setDraftProtein] = useState("");
   const [draftCarbs, setDraftCarbs] = useState("");
@@ -116,19 +99,11 @@ const Goals = () => {
     }
 
     if (goalsRes.data) {
-      const g: Goals = {
-        calories: goalsRes.data.calories,
-        protein_g: goalsRes.data.protein_g,
-        carbs_g: goalsRes.data.carbs_g,
-        fat_g: goalsRes.data.fat_g,
-        water_ml: goalsRes.data.water_ml,
-      };
-      setGoals(g);
-      setDraftCalories(String(g.calories));
-      setDraftProtein(String(g.protein_g));
-      setDraftCarbs(String(g.carbs_g));
-      setDraftFat(String(g.fat_g));
-      setDraftWater(String(g.water_ml));
+      setDraftCalories(String(goalsRes.data.calories));
+      setDraftProtein(String(goalsRes.data.protein_g));
+      setDraftCarbs(String(goalsRes.data.carbs_g));
+      setDraftFat(String(goalsRes.data.fat_g));
+      setDraftWater(String(goalsRes.data.water_ml));
     }
 
     setLoaded(true);
@@ -138,23 +113,20 @@ const Goals = () => {
 
   // Recalculate when goal type changes
   useEffect(() => {
-    if (!profile || !loaded) return;
+    if (!profile || !loaded || manualMode) return;
     const bmr = calcBMR(profile.gender, profile.weight_kg, profile.height_cm, profile.age);
     const tdee = calcTDEE(bmr, profile.activity_level);
     const newCalories = calcGoalCalories(tdee, selectedGoal);
     setDraftCalories(String(newCalories));
+    const macros = calcAutoMacros(newCalories, profile.weight_kg, selectedGoal);
+    setDraftProtein(String(macros.protein_g));
+    setDraftCarbs(String(macros.carbs_g));
+    setDraftFat(String(macros.fat_g));
+  }, [selectedGoal, profile, loaded, manualMode]);
 
-    if (autoBalance) {
-      const macros = calcAutoMacros(newCalories, profile.weight_kg, selectedGoal);
-      setDraftProtein(String(macros.protein_g));
-      setDraftCarbs(String(macros.carbs_g));
-      setDraftFat(String(macros.fat_g));
-    }
-  }, [selectedGoal, profile, loaded, autoBalance]);
-
-  // Recalculate macros when calories change (auto-balance ON)
+  // Recalculate macros when calories change (auto mode)
   useEffect(() => {
-    if (!autoBalance || !profile || !loaded) return;
+    if (manualMode || !profile || !loaded) return;
     const cal = Number(draftCalories);
     if (cal <= 0) return;
     const macros = calcAutoMacros(cal, profile.weight_kg, selectedGoal);
@@ -162,14 +134,19 @@ const Goals = () => {
     setDraftCarbs(String(macros.carbs_g));
     setDraftFat(String(macros.fat_g));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draftCalories, autoBalance]);
+  }, [draftCalories, manualMode]);
 
   const handleMacroChange = (field: "protein" | "carbs" | "fat", value: string) => {
     if (value !== "" && !/^\d*\.?\d*$/.test(value)) return;
     if (field === "protein") setDraftProtein(value);
     else if (field === "carbs") setDraftCarbs(value);
     else setDraftFat(value);
-    if (autoBalance) setAutoBalance(false);
+    if (!manualMode) setManualMode(true);
+  };
+
+  const resetToAutoBalance = () => {
+    setManualMode(false);
+    // useEffect will handle recalculation
   };
 
   const handleSave = async () => {
@@ -191,10 +168,8 @@ const Goals = () => {
         await supabase.from("user_goals").insert({ user_id: user.id, ...newGoals });
       }
 
-      // Update goal type in profile
       await supabase.from("user_profiles").update({ goal: selectedGoal }).eq("user_id", user.id);
 
-      setGoals(newGoals);
       toast({ title: "Goals saved!", description: `Daily target: ${newGoals.calories} kcal` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -203,32 +178,24 @@ const Goals = () => {
     }
   };
 
-  // TDEE info
   const bmr = profile ? calcBMR(profile.gender, profile.weight_kg, profile.height_cm, profile.age) : 0;
   const tdee = profile ? calcTDEE(bmr, profile.activity_level) : 0;
 
-  // Timeline prediction
   const getTimeline = () => {
     if (!profile) return null;
-    const currentWeight = profile.weight_kg;
-    const goalWeight = profile.goal_weight_kg;
-    const weeklyDeficit = (tdee - Number(draftCalories)) * 7;
-
     if (selectedGoal === "cut") {
+      const weeklyDeficit = (tdee - Number(draftCalories)) * 7;
       const weeklyFatLossKg = weeklyDeficit / 7700;
       if (weeklyFatLossKg <= 0) return "Increase your calorie deficit to lose weight.";
-      const weightToLose = currentWeight - goalWeight;
+      const weightToLose = profile.weight_kg - profile.goal_weight_kg;
       if (weightToLose <= 0) return "You're already at or below your goal weight!";
       const weeks = weightToLose / weeklyFatLossKg;
-      const low = Math.floor(weeks);
-      const high = Math.ceil(weeks * 1.2);
-      return `Estimated time to goal: ${low}–${high} weeks`;
+      return `Estimated time to goal: ${Math.floor(weeks)}–${Math.ceil(weeks * 1.2)} weeks`;
     }
     if (selectedGoal === "bulk") {
-      const weightToGain = goalWeight - currentWeight;
+      const weightToGain = profile.goal_weight_kg - profile.weight_kg;
       if (weightToGain <= 0) return "You're already at or above your goal weight!";
-      const months = weightToGain / 0.25;
-      return `Estimated time to goal: ${Math.round(months)} months (conservative)`;
+      return `Estimated time to goal: ${Math.round(weightToGain / 0.25)} months (conservative)`;
     }
     return "Maintaining current weight target.";
   };
@@ -247,7 +214,7 @@ const Goals = () => {
         <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2.5">
           <h1 className="text-lg font-semibold tracking-tight text-foreground">Daily Goals</h1>
           <div className="flex items-center gap-1.5">
-            {autoBalance && profile ? (
+            {!manualMode && profile ? (
               <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground/70 bg-muted/60 px-2 py-0.5 rounded-full">
                 <Sparkles className="h-2.5 w-2.5" />
                 Auto-balanced
@@ -260,7 +227,7 @@ const Goals = () => {
       </header>
 
       <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-28">
-        {/* Goal Type Selector — Segmented Control */}
+        {/* Goal Type Selector */}
         <section className="space-y-3">
           <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Goal</Label>
           <div className="flex rounded-2xl bg-muted/50 p-1 gap-1">
@@ -270,11 +237,9 @@ const Goals = () => {
               return (
                 <button
                   key={opt.value}
-                  onClick={() => setSelectedGoal(opt.value)}
+                  onClick={() => { setSelectedGoal(opt.value); setManualMode(false); }}
                   className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground/80"
+                    isActive ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground/80"
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -341,23 +306,30 @@ const Goals = () => {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Macros</Label>
+            {manualMode && (
+              <button
+                onClick={resetToAutoBalance}
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Reset to auto-balance
+              </button>
+            )}
           </div>
-
-          {profile && (
-            <div className="flex items-center justify-between py-1">
-              <span className="text-[13px] text-foreground/80">Auto-balance macros</span>
-              <Switch checked={autoBalance} onCheckedChange={setAutoBalance} />
-            </div>
-          )}
 
           <div className="space-y-3">
             {[
-              { label: "Protein", value: draftProtein, onChange: (v: string) => handleMacroChange("protein", v), unit: "g" },
-              { label: "Carbs", value: draftCarbs, onChange: (v: string) => handleMacroChange("carbs", v), unit: "g" },
-              { label: "Fat", value: draftFat, onChange: (v: string) => handleMacroChange("fat", v), unit: "g" },
+              { label: "Protein", value: draftProtein, onChange: (v: string) => handleMacroChange("protein", v), unit: "g", hint: profile ? `${selectedGoal === "cut" ? "2.0" : selectedGoal === "bulk" ? "1.8" : "1.6"}g/kg` : "" },
+              { label: "Carbs", value: draftCarbs, onChange: (v: string) => handleMacroChange("carbs", v), unit: "g", hint: "remainder" },
+              { label: "Fat", value: draftFat, onChange: (v: string) => handleMacroChange("fat", v), unit: "g", hint: "25% cals" },
             ].map((f) => (
               <div key={f.label} className="flex items-center gap-3">
-                <span className="text-sm text-foreground w-16 shrink-0">{f.label}</span>
+                <div className="w-16 shrink-0">
+                  <span className="text-sm text-foreground">{f.label}</span>
+                  {!manualMode && f.hint && (
+                    <span className="block text-[9px] text-muted-foreground/50">{f.hint}</span>
+                  )}
+                </div>
                 <div className="relative flex-1">
                   <Input
                     type="text"
@@ -374,7 +346,7 @@ const Goals = () => {
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground/60">
-            {autoBalance && profile ? "Macros adjust automatically when calories or goal change." : "Manually set your macro targets."}
+            {!manualMode && profile ? "Macros adjust automatically when calories or goal change." : "Manually set your macro targets."}
           </p>
         </section>
 
@@ -409,7 +381,7 @@ const Goals = () => {
 
         <div className="h-px bg-border/60" />
 
-        {/* Goal Timeline Prediction */}
+        {/* Goal Timeline */}
         {profile && (
           <section className="rounded-2xl bg-primary/5 p-4 space-y-2 shadow-sm">
             <div className="flex items-center gap-2">
@@ -435,7 +407,7 @@ const Goals = () => {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full h-12 rounded-2xl text-sm font-medium bg-gradient-to-r from-primary to-primary/85 hover:from-primary/95 hover:to-primary/80 shadow-sm"
+          className="w-full h-12 rounded-2xl text-sm font-medium shadow-sm"
         >
           {saving ? "Saving…" : "Save Goals"}
         </Button>

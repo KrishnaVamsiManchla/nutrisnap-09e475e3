@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import Pricing from "./pages/Pricing";
 import Progress from "./pages/Progress";
 import Goals from "./pages/Goals";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
           <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
           <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
