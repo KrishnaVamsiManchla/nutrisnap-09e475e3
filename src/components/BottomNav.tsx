@@ -25,17 +25,22 @@ const BottomNav = ({ onCameraPress }: BottomNavProps) => {
           <button
             onClick={onCameraPress}
             className="absolute -top-5 right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform duration-150 active:scale-90"
-            style={{ backgroundColor: "#111111" }}
+            style={{ backgroundColor: "hsl(var(--foreground))" }}
             aria-label="AI Camera"
           >
-            <Camera className="h-6 w-6 text-white" strokeWidth={1.5} />
+            <Camera className="h-6 w-6 text-background" strokeWidth={1.5} />
           </button>
         )}
 
         {/* Nav Bar */}
         <nav
-          className="flex items-center justify-around rounded-3xl px-2 py-1.5 shadow-[0_-1px_12px_rgba(0,0,0,0.06)]"
-          style={{ backgroundColor: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
+          className="flex items-center justify-around rounded-3xl px-2 py-1.5"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            boxShadow: "0 -1px 12px rgba(0,0,0,0.06)",
+          }}
         >
           {tabs.map((tab) => {
             const isActive = location.pathname === tab.path;
@@ -47,9 +52,7 @@ const BottomNav = ({ onCameraPress }: BottomNavProps) => {
                 onClick={() => navigate(tab.path)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 rounded-2xl px-4 py-1.5 transition-all duration-200 active:scale-95",
-                  isActive
-                    ? "bg-foreground/8"
-                    : "bg-transparent"
+                  isActive ? "bg-foreground/8" : "bg-transparent"
                 )}
               >
                 <Icon
