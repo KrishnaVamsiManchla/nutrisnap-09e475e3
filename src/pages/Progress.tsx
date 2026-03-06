@@ -128,10 +128,17 @@ const Progress = () => {
     setStreak(s);
   }, [user]);
 
+  const loadGoals = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from("user_goals").select("calories, protein_g").eq("user_id", user.id).maybeSingle();
+    if (data) setGoals({ calories: data.calories, protein: data.protein_g });
+  }, [user]);
+
   useEffect(() => {
     loadWeightLogs();
     loadDailyData();
-  }, [loadWeightLogs, loadDailyData]);
+    loadGoals();
+  }, [loadWeightLogs, loadDailyData, loadGoals]);
 
   const saveWeight = async () => {
     if (!user || !weightInput) return;
