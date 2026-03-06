@@ -82,11 +82,12 @@ const Progress = () => {
     const since = subDays(new Date(), 30).toISOString();
     const { data } = await supabase
       .from("food_entries")
-      .select("calories, protein_g, carbs_g, fat_g, created_at")
+      .select("calories, protein_g, carbs_g, fat_g, created_at, meal_type")
       .gte("created_at", since)
       .order("created_at", { ascending: true });
 
     if (!data) return;
+    setRawEntries(data as RawFoodEntry[]);
 
     // Group by date
     const grouped: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
