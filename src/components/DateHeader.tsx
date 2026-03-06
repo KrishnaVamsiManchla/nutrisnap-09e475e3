@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { format, addDays, subDays, isToday, differenceInCalendarDays } from "date-fns";
+import { format, addDays, subDays, isToday } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,7 +9,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import UpgradeNudge from "@/components/UpgradeNudge";
 
 interface DateHeaderProps {
   date: Date;
@@ -19,10 +18,6 @@ interface DateHeaderProps {
 const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
   const today = isToday(date);
   const touchStartX = useRef<number | null>(null);
-  const [historyNudgeDismissed, setHistoryNudgeDismissed] = useState(false);
-
-  const daysBack = differenceInCalendarDays(new Date(), date);
-  const showHistoryNudge = daysBack > 7 && !historyNudgeDismissed;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -33,10 +28,8 @@ const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
     const diff = e.changedTouches[0].clientX - touchStartX.current;
     const threshold = 50;
     if (diff > threshold) {
-      // Swiped right → previous day
       onDateChange(subDays(date, 1));
     } else if (diff < -threshold && !today) {
-      // Swiped left → next day
       onDateChange(addDays(date, 1));
     }
     touchStartX.current = null;
@@ -51,24 +44,24 @@ const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 rounded-full"
+        className="h-9 w-9 rounded-xl press-scale"
         onClick={() => onDateChange(subDays(date, 1))}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
       </Button>
 
       <Popover>
         <PopoverTrigger asChild>
-          <button className="flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl hover:bg-accent transition-colors">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <button className="flex flex-col items-center gap-0.5 px-5 py-1.5 rounded-2xl hover:bg-accent/60 transition-colors press-scale">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
               {today ? "Today" : format(date, "EEEE")}
             </span>
-            <span className="text-lg font-bold tracking-tight">
+            <span className="text-lg font-bold tracking-tight text-foreground">
               {format(date, "MMM d, yyyy")}
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="center">
+        <PopoverContent className="w-auto p-0 rounded-2xl shadow-elevated" align="center">
           <Calendar
             mode="single"
             selected={date}
@@ -82,18 +75,12 @@ const DateHeader = ({ date, onDateChange }: DateHeaderProps) => {
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 rounded-full"
+        className="h-9 w-9 rounded-xl press-scale"
         onClick={() => onDateChange(addDays(date, 1))}
         disabled={today}
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
       </Button>
-
-      {showHistoryNudge && (
-        <div className="absolute left-0 right-0 top-full mt-2 px-4 z-20">
-          <UpgradeNudge type="full-history" onDismiss={() => setHistoryNudgeDismissed(true)} />
-        </div>
-      )}
     </div>
   );
 };

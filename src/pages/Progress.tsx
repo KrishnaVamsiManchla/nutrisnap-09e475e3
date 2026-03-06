@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import BottomNav from "@/components/BottomNav";
-import { ArrowLeft, Plus, Scale, Flame, Beef, Wheat, Droplets, TrendingUp, Trophy, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Scale, Flame, Beef, TrendingUp, Trophy, Pencil, Trash2 } from "lucide-react";
 import ConsistencyScore from "@/components/ConsistencyScore";
 import MealPatternInsights from "@/components/MealPatternInsights";
 import { useNavigate } from "react-router-dom";
@@ -27,10 +27,9 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import { format, subDays, differenceInCalendarDays, parseISO, startOfDay, isAfter, isBefore, addDays } from "date-fns";
+import { format, subDays, parseISO, startOfDay, isAfter, isBefore } from "date-fns";
 import WeeklyAnalysis from "@/components/WeeklyAnalysis";
 import WeightProjection from "@/components/WeightProjection";
-import UpgradeNudge from "@/components/UpgradeNudge";
 import LockedFeature from "@/components/LockedFeature";
 
 interface WeightLog {
@@ -56,9 +55,7 @@ interface RawFoodEntry {
 }
 
 const Progress = () => {
-  // TODO: replace with real subscription check
   const isPremium = false;
-
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -96,7 +93,6 @@ const Progress = () => {
     if (!data) return;
     setRawEntries(data as RawFoodEntry[]);
 
-    // Group by date
     const grouped: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
     data.forEach((e: any) => {
       const day = format(new Date(e.created_at), "yyyy-MM-dd");
@@ -113,11 +109,9 @@ const Progress = () => {
 
     setDailyData(result);
 
-    // Calculate streak
     const loggedDates = new Set(Object.keys(grouped));
     let s = 0;
     let d = startOfDay(new Date());
-    // Check if today is logged, if not start from yesterday
     if (!loggedDates.has(format(d, "yyyy-MM-dd"))) {
       d = subDays(d, 1);
     }
@@ -157,7 +151,7 @@ const Progress = () => {
         });
         if (error) {
           if (error.code === "23505") {
-            toast({ title: "Entry exists", description: "A weight log for this date already exists. Edit it instead.", variant: "destructive" });
+            toast({ title: "Entry exists", description: "A weight log for this date already exists.", variant: "destructive" });
             setSaving(false);
             return;
           }
@@ -189,13 +183,11 @@ const Progress = () => {
     setShowAddWeight(true);
   };
 
-  // Prepare chart data
   const weightChartData = weightLogs.map((w) => ({
     date: format(parseISO(w.logged_at), "MMM d"),
     weight: Number(w.weight_kg),
   }));
 
-  // 7-day rolling average for calories
   const calAvgData = dailyData.map((d, i) => {
     const windowStart = Math.max(0, i - 6);
     const window = dailyData.slice(windowStart, i + 1);
@@ -203,7 +195,6 @@ const Progress = () => {
     return { date: format(parseISO(d.date), "MMM d"), avg, actual: Math.round(d.calories) };
   });
 
-  // Weekly macro averages (last 4 weeks)
   const weeklyMacros = (() => {
     const weeks: { label: string; protein: number; carbs: number; fat: number; count: number }[] = [];
     for (let w = 3; w >= 0; w--) {
@@ -226,17 +217,28 @@ const Progress = () => {
     return weeks;
   })();
 
-  // Weekly summary (last 7 days)
   const last7 = dailyData.slice(-7);
   const avgCalories = last7.length ? Math.round(last7.reduce((s, d) => s + d.calories, 0) / last7.length) : 0;
   const avgProtein = last7.length ? Math.round(last7.reduce((s, d) => s + d.protein, 0) / last7.length) : 0;
 
+  const chartTooltipStyle = {
+    contentStyle: {
+      borderRadius: 16,
+      border: "1px solid hsl(var(--border) / 0.5)",
+      background: "hsl(var(--card))",
+      boxShadow: "var(--shadow-elevated)",
+      padding: "8px 12px",
+      fontSize: 13,
+    },
+    labelStyle: { fontWeight: 600 },
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2">
-          <button onClick={() => navigate("/")} className="flex items-center gap-1 text-sm font-medium">
-            <ArrowLeft className="h-4 w-4" />
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl" style={{ borderBottom: "1px solid hsl(var(--border) / 0.5)" }}>
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
+          <button onClick={() => navigate("/")} className="flex items-center gap-1.5 text-sm font-medium press-scale">
+            <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
             Back
           </button>
           <h1 className="text-lg font-bold">Progress</h1>
@@ -246,29 +248,24 @@ const Progress = () => {
 
       <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-28">
         {/* Streak */}
-        <div className="flex items-center gap-3 rounded-2xl border bg-card p-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Trophy className="h-6 w-6 text-primary" />
+        <div className="card-premium flex items-center gap-4 animate-fade-in">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <Trophy className="h-7 w-7 text-primary" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-2xl font-bold">{streak} day{streak !== 1 ? "s" : ""}</p>
+            <p className="text-3xl font-bold text-foreground">{streak} day{streak !== 1 ? "s" : ""}</p>
             <p className="text-sm text-muted-foreground">Logging streak</p>
           </div>
         </div>
 
-        {/* 7-day streak nudge */}
-        {streak >= 7 && (
-          <UpgradeNudge type="weekly-insights" />
-        )}
-
         {/* Weight Graph */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
+        <section className="card-premium space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Weight Progress</h2>
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Weight Progress</h2>
             <Button
               variant="outline"
               size="sm"
-              className="gap-1 h-7 text-xs"
+              className="gap-1.5 h-8 text-xs rounded-xl border-border/60 press-scale"
               onClick={() => {
                 setEditingLog(null);
                 setWeightInput("");
@@ -284,35 +281,31 @@ const Progress = () => {
           {weightChartData.length > 1 ? (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={weightChartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-                <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11 }} className="fill-muted-foreground" width={40} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
-                  labelStyle={{ fontWeight: 600 }}
-                />
-                <Line type="monotone" dataKey="weight" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground) / 0.5)" />
+                <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground) / 0.5)" width={40} />
+                <Tooltip {...chartTooltipStyle} />
+                <Line type="monotone" dataKey="weight" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3, fill: "hsl(var(--primary))" }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm">
-              <Scale className="h-8 w-8 mb-2 opacity-40" />
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground text-sm">
+              <Scale className="h-8 w-8 mb-3 opacity-30" />
               <p>Log at least 2 weights to see your trend</p>
             </div>
           )}
 
-          {/* Recent weight entries */}
           {weightLogs.length > 0 && (
-            <div className="space-y-1 max-h-32 overflow-y-auto">
+            <div className="space-y-1.5 max-h-32 overflow-y-auto">
               {[...weightLogs].reverse().slice(0, 5).map((log) => (
-                <div key={log.id} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
+                <div key={log.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3.5 py-2.5 text-sm">
                   <span className="text-muted-foreground">{format(parseISO(log.logged_at), "MMM d, yyyy")}</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <span className="font-semibold">{Number(log.weight_kg)} kg</span>
-                    <button onClick={() => openEdit(log)} className="text-muted-foreground hover:text-foreground">
+                    <button onClick={() => openEdit(log)} className="text-muted-foreground hover:text-foreground press-scale">
                       <Pencil className="h-3 w-3" />
                     </button>
-                    <button onClick={() => deleteWeight(log.id)} className="text-muted-foreground hover:text-destructive">
+                    <button onClick={() => deleteWeight(log.id)} className="text-muted-foreground hover:text-destructive press-scale">
                       <Trash2 className="h-3 w-3" />
                     </button>
                   </div>
@@ -322,50 +315,46 @@ const Progress = () => {
           )}
         </section>
 
-        {/* Calorie Trend (7-day avg) */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Calorie Trend (7-Day Avg)</h2>
+        {/* Calorie Trend */}
+        <section className="card-premium space-y-4">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Calorie Trend (7-Day Avg)</h2>
           {calAvgData.length > 2 ? (
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={calAvgData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-                <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" width={45} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground) / 0.5)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground) / 0.5)" width={45} />
+                <Tooltip {...chartTooltipStyle} />
                 <Line type="monotone" dataKey="avg" stroke="hsl(var(--primary))" strokeWidth={2} name="7-day avg" dot={false} />
-                <Line type="monotone" dataKey="actual" stroke="hsl(var(--muted-foreground))" strokeWidth={1} strokeDasharray="4 4" name="Daily" dot={false} />
+                <Line type="monotone" dataKey="actual" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth={1} strokeDasharray="4 4" name="Daily" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm">
-              <Flame className="h-8 w-8 mb-2 opacity-40" />
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground text-sm">
+              <Flame className="h-8 w-8 mb-3 opacity-30" />
               <p>Log a few days of food to see trends</p>
             </div>
           )}
         </section>
 
-        {/* Macro Trends (Weekly) */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Weekly Macro Averages</h2>
+        {/* Macro Trends */}
+        <section className="card-premium space-y-4">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Weekly Macro Averages</h2>
           {weeklyMacros.some((w) => w.count > 0) ? (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={weeklyMacros}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="label" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
-                <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" width={35} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
-                />
-                <Bar dataKey="protein" fill="hsl(var(--health-red))" radius={[4, 4, 0, 0]} name="Protein" />
-                <Bar dataKey="carbs" fill="hsl(var(--health-orange))" radius={[4, 4, 0, 0]} name="Carbs" />
-                <Bar dataKey="fat" fill="hsl(var(--health-blue))" radius={[4, 4, 0, 0]} name="Fat" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" />
+                <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.5)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground) / 0.5)" width={35} />
+                <Tooltip {...chartTooltipStyle} />
+                <Bar dataKey="protein" fill="hsl(var(--health-red) / 0.7)" radius={[6, 6, 0, 0]} name="Protein" />
+                <Bar dataKey="carbs" fill="hsl(var(--health-orange) / 0.7)" radius={[6, 6, 0, 0]} name="Carbs" />
+                <Bar dataKey="fat" fill="hsl(var(--health-blue) / 0.7)" radius={[6, 6, 0, 0]} name="Fat" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm">
-              <TrendingUp className="h-8 w-8 mb-2 opacity-40" />
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground text-sm">
+              <TrendingUp className="h-8 w-8 mb-3 opacity-30" />
               <p>No data yet for macro trends</p>
             </div>
           )}
@@ -382,42 +371,43 @@ const Progress = () => {
         </LockedFeature>
 
         {/* Weekly Summary */}
-        <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Weekly Summary</h2>
+        <section className="card-premium space-y-4" style={{ background: "hsl(var(--primary) / 0.04)" }}>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Weekly Summary</h2>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-3 rounded-xl bg-background p-3">
-              <Flame className="h-5 w-5 text-primary shrink-0" />
+            <div className="flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-card">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <Flame className="h-5 w-5 text-primary" strokeWidth={1.5} />
+              </div>
               <div>
-                <p className="text-xs text-muted-foreground">Avg Calories</p>
+                <p className="text-[10px] text-muted-foreground font-medium">Avg Calories</p>
                 <p className="text-lg font-bold">{avgCalories}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl bg-background p-3">
-              <Beef className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--health-red))" }} />
+            <div className="flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-card">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "hsl(var(--health-red) / 0.1)" }}>
+                <Beef className="h-5 w-5" style={{ color: "hsl(var(--health-red))" }} strokeWidth={1.5} />
+              </div>
               <div>
-                <p className="text-xs text-muted-foreground">Avg Protein</p>
+                <p className="text-[10px] text-muted-foreground font-medium">Avg Protein</p>
                 <p className="text-lg font-bold">{avgProtein}g</p>
               </div>
             </div>
           </div>
 
-          {/* AI-style insight */}
-          <div className="rounded-xl bg-background px-4 py-3 text-sm text-muted-foreground leading-relaxed">
+          <div className="rounded-2xl bg-card px-4 py-3.5 text-sm text-muted-foreground leading-relaxed shadow-card">
             {last7.length >= 3 ? (
-              <>
-                {avgCalories > 0 && avgProtein > 0 ? (
-                  <p>
-                    📊 Over the last {last7.length} days, you averaged <span className="font-semibold text-foreground">{avgCalories} kcal</span> and{" "}
-                    <span className="font-semibold text-foreground">{avgProtein}g protein</span> daily.
-                    {avgProtein < 100 ? " Consider increasing protein-rich foods like chicken, eggs, or legumes." : " Great protein intake — keep it up!"}
-                    {streak >= 7 ? " 🔥 Amazing streak! Consistency is key to results." : streak >= 3 ? " 💪 Nice streak building up!" : ""}
-                  </p>
-                ) : (
-                  <p>Keep logging your meals to unlock weekly insights!</p>
-                )}
-              </>
+              avgCalories > 0 && avgProtein > 0 ? (
+                <p>
+                  📊 Over the last {last7.length} days, you averaged <span className="font-semibold text-foreground">{avgCalories} kcal</span> and{" "}
+                  <span className="font-semibold text-foreground">{avgProtein}g protein</span> daily.
+                  {avgProtein < 100 ? " Consider increasing protein-rich foods." : " Great protein intake!"}
+                  {streak >= 7 ? " 🔥 Amazing streak!" : streak >= 3 ? " 💪 Nice streak!" : ""}
+                </p>
+              ) : (
+                <p>Keep logging your meals to unlock weekly insights!</p>
+              )
             ) : (
-              <p>📝 Log at least 3 days this week to see your personalized summary.</p>
+              <p>📝 Log at least 3 days this week to see your summary.</p>
             )}
           </div>
         </section>
@@ -451,32 +441,34 @@ const Progress = () => {
           if (!open) setEditingLog(null);
         }}
       >
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle>{editingLog ? "Edit Weight" : "Log Weight"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">Weight (kg)</Label>
+              <Label className="text-muted-foreground text-xs font-medium">Weight (kg)</Label>
               <Input
                 type="number"
                 step="0.1"
                 placeholder="e.g. 72.5"
                 value={weightInput}
                 onChange={(e) => setWeightInput(e.target.value)}
+                className="rounded-xl"
                 autoFocus
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">Date</Label>
+              <Label className="text-muted-foreground text-xs font-medium">Date</Label>
               <Input
                 type="date"
                 value={dateInput}
                 onChange={(e) => setDateInput(e.target.value)}
                 max={format(new Date(), "yyyy-MM-dd")}
+                className="rounded-xl"
               />
             </div>
-            <Button onClick={saveWeight} disabled={saving || !weightInput} className="w-full rounded-xl">
+            <Button onClick={saveWeight} disabled={saving || !weightInput} className="w-full rounded-xl h-11">
               {saving ? "Saving…" : editingLog ? "Update" : "Save"}
             </Button>
           </div>

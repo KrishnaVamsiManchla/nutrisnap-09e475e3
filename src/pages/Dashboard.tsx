@@ -236,7 +236,6 @@ const Dashboard = () => {
 
   const totalWaterMl = waterEntries.reduce((sum, e) => sum + e.amount_ml, 0);
 
-  // TDEE for goal summary
   const tdee = profile
     ? (function () {
         const bmr = profile.gender === "male"
@@ -249,49 +248,53 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2.5">
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">NutriSnap</h1>
-          <div className="flex items-center gap-1.5">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl" style={{ borderBottom: "1px solid hsl(var(--border) / 0.5)" }}>
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
+          <h1 className="text-lg font-bold tracking-tight text-foreground">NutriSnap</h1>
+          <div className="flex items-center gap-2">
             <PremiumBadge isPremium={isPremium} />
             <button
               onClick={() => navigate("/settings")}
-              className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-muted active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-muted press-scale"
             >
-              <Settings className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+              <Settings className="h-4.5 w-4.5 text-muted-foreground" strokeWidth={1.5} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-10 px-4 py-8 pb-28">
+      <main className="mx-auto max-w-lg space-y-8 px-4 py-8 pb-28">
         <DateHeader date={selectedDate} onDateChange={setSelectedDate} />
 
-        <div className="flex justify-center">
+        <div className="flex justify-center animate-fade-in">
           <CalorieRing consumed={totals.calories} target={goals.calories} />
         </div>
 
-        <MacroCards
-          protein={totals.protein}
-          carbs={totals.carbs}
-          fat={totals.fat}
-          goals={{ protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
-        />
+        <div className="animate-fade-in" style={{ animationDelay: "80ms" }}>
+          <MacroCards
+            protein={totals.protein}
+            carbs={totals.carbs}
+            fat={totals.fat}
+            goals={{ protein: goals.protein_g, carbs: goals.carbs_g, fat: goals.fat_g }}
+          />
+        </div>
 
         {/* Goal Summary */}
         {profile && (
-          <GoalSummaryCard
-            goal={profile.goal}
-            currentWeight={profile.weight_kg}
-            targetWeight={profile.goal_weight_kg}
-            weeklyDeficitKcal={(tdee - goals.calories) * 7}
-            tdee={tdee}
-            calories={goals.calories}
-          />
+          <div className="animate-fade-in" style={{ animationDelay: "160ms" }}>
+            <GoalSummaryCard
+              goal={profile.goal}
+              currentWeight={profile.weight_kg}
+              targetWeight={profile.goal_weight_kg}
+              weeklyDeficitKcal={(tdee - goals.calories) * 7}
+              tdee={tdee}
+              calories={goals.calories}
+            />
+          </div>
         )}
 
         {/* Water */}
-        <div className="rounded-2xl bg-card p-5 shadow-sm">
+        <div className="card-premium animate-fade-in" style={{ animationDelay: "240ms" }}>
           <WaterTracker
             currentMl={totalWaterMl}
             goalMl={goals.water_ml}
@@ -316,21 +319,21 @@ const Dashboard = () => {
         />
 
         <div>
-          <h3 className="text-sm font-semibold mb-3 text-foreground">Meals</h3>
+          <h3 className="text-xs font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Meals</h3>
           <MealLog entries={entries} onDelete={deleteEntry} />
         </div>
       </main>
 
       {/* Dialogs */}
       <Dialog open={showManual} onOpenChange={setShowManual}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader><DialogTitle>Add Food</DialogTitle></DialogHeader>
           <ManualEntry onResult={handleResult} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={showCamera} onOpenChange={setShowCamera}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader><DialogTitle>Scan with AI</DialogTitle></DialogHeader>
           <LockedFeature isPremium={isPremium} featureName="AI Photo Tracking">
             <FoodCamera onResult={handleResult} />
@@ -339,14 +342,14 @@ const Dashboard = () => {
       </Dialog>
 
       <Dialog open={showVoice} onOpenChange={setShowVoice}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader><DialogTitle>Voice Log</DialogTitle></DialogHeader>
           <VoiceEntry onResult={handleResult} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={showResult} onOpenChange={(open) => { setShowResult(open); if (!open) setResult(null); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader><DialogTitle>Nutrition Info</DialogTitle></DialogHeader>
           {result && (
             <NutritionResult

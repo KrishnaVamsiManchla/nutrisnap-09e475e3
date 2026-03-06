@@ -9,7 +9,7 @@ interface BottomNavProps {
 const tabs = [
   { path: "/", label: "Home", icon: Home },
   { path: "/progress", label: "Progress", icon: TrendingUp },
-  { path: "/goals", label: "Daily Goals", icon: Target },
+  { path: "/goals", label: "Goals", icon: Target },
   { path: "/profile", label: "Profile", icon: UserCircle },
 ];
 
@@ -24,7 +24,7 @@ const BottomNav = ({ onCameraPress }: BottomNavProps) => {
         {onCameraPress && (
           <button
             onClick={onCameraPress}
-            className="absolute -top-5 right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform duration-150 active:scale-90"
+            className="absolute -top-5 right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full shadow-elevated press-scale"
             style={{ backgroundColor: "hsl(var(--foreground))" }}
             aria-label="AI Camera"
           >
@@ -34,12 +34,12 @@ const BottomNav = ({ onCameraPress }: BottomNavProps) => {
 
         {/* Nav Bar */}
         <nav
-          className="flex items-center justify-around rounded-3xl px-2 py-1.5"
+          className="flex items-center justify-around rounded-[22px] px-2 py-1.5"
           style={{
-            backgroundColor: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            boxShadow: "0 -1px 12px rgba(0,0,0,0.06)",
+            backgroundColor: "hsl(var(--card) / 0.88)",
+            backdropFilter: "blur(24px) saturate(180%)",
+            WebkitBackdropFilter: "blur(24px) saturate(180%)",
+            boxShadow: "var(--shadow-nav)",
           }}
         >
           {tabs.map((tab) => {
@@ -51,22 +51,21 @@ const BottomNav = ({ onCameraPress }: BottomNavProps) => {
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 rounded-2xl px-4 py-1.5 transition-all duration-200 active:scale-95",
-                  isActive ? "bg-foreground/8" : "bg-transparent"
+                  "flex flex-col items-center gap-0.5 rounded-2xl px-4 py-1.5 transition-all duration-200 press-scale",
+                  isActive ? "bg-primary/10" : "bg-transparent"
                 )}
               >
                 <Icon
                   className={cn(
                     "h-5 w-5 transition-colors duration-200",
-                    isActive ? "text-foreground" : "text-muted-foreground/70"
+                    isActive ? "text-primary" : "text-muted-foreground/60"
                   )}
                   strokeWidth={isActive ? 2 : 1.5}
-                  fill={isActive ? "currentColor" : "none"}
                 />
                 <span
                   className={cn(
                     "text-[10px] font-medium transition-colors duration-200",
-                    isActive ? "text-foreground" : "text-muted-foreground/70"
+                    isActive ? "text-primary" : "text-muted-foreground/60"
                   )}
                 >
                   {tab.label}

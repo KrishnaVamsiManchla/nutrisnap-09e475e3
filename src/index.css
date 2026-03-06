@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 210 33% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -34,7 +34,12 @@
 
     --radius: 0.875rem;
 
-    --health-green: 142 55% 49%;
+    --success: 160 60% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --health-green: 160 60% 45%;
     --health-blue: 217 91% 60%;
     --health-red: 0 72% 51%;
     --health-orange: 25 80% 52%;
@@ -48,6 +53,11 @@
     --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 214 32% 91%;
     --sidebar-ring: 217 91% 60%;
+
+    --shadow-card: 0 1px 3px 0 hsl(222 47% 11% / 0.04), 0 1px 2px -1px hsl(222 47% 11% / 0.03);
+    --shadow-card-hover: 0 4px 12px 0 hsl(222 47% 11% / 0.06), 0 2px 4px -1px hsl(222 47% 11% / 0.04);
+    --shadow-elevated: 0 8px 24px -4px hsl(222 47% 11% / 0.08), 0 4px 8px -2px hsl(222 47% 11% / 0.04);
+    --shadow-nav: 0 -1px 16px 0 hsl(222 47% 11% / 0.05);
   }
 
   .dark {
@@ -79,7 +89,12 @@
     --input: 222 30% 16%;
     --ring: 217 91% 60%;
 
-    --health-green: 142 55% 49%;
+    --success: 160 60% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --health-green: 160 60% 45%;
     --health-blue: 217 91% 60%;
     --health-red: 0 72% 51%;
     --health-orange: 25 80% 52%;
@@ -93,6 +108,11 @@
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 222 30% 16%;
     --sidebar-ring: 217 91% 60%;
+
+    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.2);
+    --shadow-card-hover: 0 4px 12px 0 hsl(0 0% 0% / 0.3);
+    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.4);
+    --shadow-nav: 0 -1px 16px 0 hsl(0 0% 0% / 0.3);
   }
 }
 
@@ -112,5 +132,23 @@
 @layer utilities {
   .calorie-ring {
     transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-premium {
+    @apply rounded-2xl bg-card p-5;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .card-premium:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .press-scale {
+    @apply transition-transform duration-150 active:scale-[0.97];
+  }
+
+  .section-gap {
+    @apply space-y-6;
   }
 }

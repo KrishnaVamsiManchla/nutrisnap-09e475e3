@@ -31,10 +31,10 @@ const MealLog = ({ entries, onDelete }: MealLogProps) => {
 
   if (entries.length === 0) {
     return (
-      <div className="py-10 text-center">
-        <Flame className="mx-auto mb-2 h-8 w-8 text-muted-foreground/20" />
-        <p className="text-sm text-muted-foreground">No meals logged yet</p>
-        <p className="text-xs text-muted-foreground/60">Use the buttons above to add your first meal</p>
+      <div className="py-12 text-center">
+        <Flame className="mx-auto mb-3 h-8 w-8 text-muted-foreground/20" />
+        <p className="text-sm font-medium text-muted-foreground">No meals logged yet</p>
+        <p className="text-xs text-muted-foreground/60 mt-1">Use the buttons above to add your first meal</p>
       </div>
     );
   }
@@ -51,7 +51,7 @@ const MealLog = ({ entries, onDelete }: MealLogProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {["breakfast", "lunch", "dinner", "snack"].map((meal) => {
         const items = grouped[meal];
         if (!items?.length) return null;
@@ -60,57 +60,55 @@ const MealLog = ({ entries, onDelete }: MealLogProps) => {
 
         return (
           <div key={meal}>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-semibold flex items-center gap-1.5">
+            <div className="flex items-center justify-between mb-2.5">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
                 <span>{meta.emoji}</span>
                 {meta.label}
               </h4>
               <span className="text-xs text-muted-foreground font-medium">{Math.round(mealCals)} kcal</span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {items.map((entry) => {
                 const isOpen = expanded[entry.id];
                 return (
                   <div
                     key={entry.id}
-                    className="rounded-xl bg-card overflow-hidden transition-all shadow-sm"
+                    className="card-premium overflow-hidden p-0"
                   >
                     <button
                       onClick={() => toggleEntry(entry.id)}
-                      className="w-full flex items-center justify-between px-3.5 py-3 text-left"
+                      className="w-full flex items-center justify-between px-4 py-3.5 text-left press-scale"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{entry.food_name}</p>
+                        <p className="font-medium text-sm truncate text-foreground">{entry.food_name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {Math.round(entry.calories)} kcal
                         </p>
                       </div>
                       {isOpen ? (
-                        <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                        <ChevronUp className="h-4 w-4 text-muted-foreground/50 shrink-0 ml-2" />
                       ) : (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                        <ChevronDown className="h-4 w-4 text-muted-foreground/50 shrink-0 ml-2" />
                       )}
                     </button>
                     {isOpen && (
-                      <div className="px-3.5 pb-3 animate-fade-in">
-                        <div className="grid grid-cols-3 gap-2 mb-2">
-                          <div className="rounded-lg bg-muted/50 p-2 text-center">
-                            <p className="text-xs text-muted-foreground">Protein</p>
-                            <p className="text-sm font-semibold">{Math.round(entry.protein_g)}g</p>
-                          </div>
-                          <div className="rounded-lg bg-muted/50 p-2 text-center">
-                            <p className="text-xs text-muted-foreground">Carbs</p>
-                            <p className="text-sm font-semibold">{Math.round(entry.carbs_g)}g</p>
-                          </div>
-                          <div className="rounded-lg bg-muted/50 p-2 text-center">
-                            <p className="text-xs text-muted-foreground">Fat</p>
-                            <p className="text-sm font-semibold">{Math.round(entry.fat_g)}g</p>
-                          </div>
+                      <div className="px-4 pb-4 animate-fade-in">
+                        <div className="grid grid-cols-3 gap-2 mb-3">
+                          {[
+                            { label: "Protein", value: entry.protein_g },
+                            { label: "Carbs", value: entry.carbs_g },
+                            { label: "Fat", value: entry.fat_g },
+                          ].map((m) => (
+                            <div key={m.label} className="rounded-xl bg-muted/40 p-2.5 text-center">
+                              <p className="text-[10px] text-muted-foreground mb-0.5">{m.label}</p>
+                              <p className="text-sm font-semibold text-foreground">{Math.round(m.value)}g</p>
+                            </div>
+                          ))}
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                          className="w-full text-destructive hover:text-destructive hover:bg-destructive/8 rounded-xl"
                           onClick={() => onDelete(entry.id)}
                         >
                           <Trash2 className="h-3.5 w-3.5 mr-1.5" />

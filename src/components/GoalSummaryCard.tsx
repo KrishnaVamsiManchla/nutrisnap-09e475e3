@@ -1,4 +1,4 @@
-import { Target, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 
 interface GoalSummaryCardProps {
   goal: "cut" | "maintain" | "bulk";
@@ -21,7 +21,7 @@ const GOAL_ICONS: Record<string, typeof TrendingDown> = {
   bulk: TrendingUp,
 };
 
-const GoalSummaryCard = ({ goal, currentWeight, targetWeight, weeklyDeficitKcal, tdee, calories }: GoalSummaryCardProps) => {
+const GoalSummaryCard = ({ goal, currentWeight, targetWeight, tdee, calories }: GoalSummaryCardProps) => {
   const Icon = GOAL_ICONS[goal] || Minus;
 
   const getEta = () => {
@@ -48,32 +48,32 @@ const GoalSummaryCard = ({ goal, currentWeight, targetWeight, weeklyDeficitKcal,
   const eta = getEta();
 
   return (
-    <div className="rounded-2xl bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
-          <Icon className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} />
+    <div className="card-premium">
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+          <Icon className="h-4 w-4 text-primary" strokeWidth={1.5} />
         </div>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Goal Summary</span>
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Goal Summary</span>
       </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
         <div>
-          <p className="text-muted-foreground text-xs">Goal</p>
-          <p className="font-medium text-foreground">{GOAL_LABELS[goal]}</p>
+          <p className="text-muted-foreground text-xs mb-0.5">Goal</p>
+          <p className="font-semibold text-foreground">{GOAL_LABELS[goal]}</p>
         </div>
         <div>
-          <p className="text-muted-foreground text-xs">Current</p>
-          <p className="font-medium text-foreground">{currentWeight} kg</p>
+          <p className="text-muted-foreground text-xs mb-0.5">Current</p>
+          <p className="font-semibold text-foreground">{currentWeight} kg</p>
         </div>
         {goal !== "maintain" && (
           <div>
-            <p className="text-muted-foreground text-xs">Target</p>
-            <p className="font-medium text-foreground">{targetWeight} kg</p>
+            <p className="text-muted-foreground text-xs mb-0.5">Target</p>
+            <p className="font-semibold text-foreground">{targetWeight} kg</p>
           </div>
         )}
         {eta && (
           <div>
-            <p className="text-muted-foreground text-xs">ETA</p>
-            <p className="font-medium text-primary">{eta}</p>
+            <p className="text-muted-foreground text-xs mb-0.5">ETA</p>
+            <p className="font-semibold text-primary">{eta}</p>
           </div>
         )}
         {goal === "maintain" && (
