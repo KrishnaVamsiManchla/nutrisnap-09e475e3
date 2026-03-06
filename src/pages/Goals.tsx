@@ -111,7 +111,6 @@ const Goals = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Recalculate when goal type changes
   useEffect(() => {
     if (!profile || !loaded || manualMode) return;
     const bmr = calcBMR(profile.gender, profile.weight_kg, profile.height_cm, profile.age);
@@ -124,7 +123,6 @@ const Goals = () => {
     setDraftFat(String(macros.fat_g));
   }, [selectedGoal, profile, loaded, manualMode]);
 
-  // Recalculate macros when calories change (auto mode)
   useEffect(() => {
     if (manualMode || !profile || !loaded) return;
     const cal = Number(draftCalories);
@@ -146,7 +144,6 @@ const Goals = () => {
 
   const resetToAutoBalance = () => {
     setManualMode(false);
-    // useEffect will handle recalculation
   };
 
   const handleSave = async () => {
@@ -190,12 +187,12 @@ const Goals = () => {
       const weightToLose = profile.weight_kg - profile.goal_weight_kg;
       if (weightToLose <= 0) return "You're already at or below your goal weight!";
       const weeks = weightToLose / weeklyFatLossKg;
-      return `Estimated time to goal: ${Math.floor(weeks)}–${Math.ceil(weeks * 1.2)} weeks`;
+      return `${Math.floor(weeks)}–${Math.ceil(weeks * 1.2)} weeks`;
     }
     if (selectedGoal === "bulk") {
       const weightToGain = profile.goal_weight_kg - profile.weight_kg;
       if (weightToGain <= 0) return "You're already at or above your goal weight!";
-      return `Estimated time to goal: ${Math.round(weightToGain / 0.25)} months (conservative)`;
+      return `~${Math.round(weightToGain / 0.25)} months (conservative)`;
     }
     return "Maintaining current weight target.";
   };
@@ -210,12 +207,12 @@ const Goals = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-2.5">
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">Daily Goals</h1>
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl" style={{ borderBottom: "1px solid hsl(var(--border) / 0.5)" }}>
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
+          <h1 className="text-lg font-bold tracking-tight text-foreground">Daily Goals</h1>
           <div className="flex items-center gap-1.5">
             {!manualMode && profile ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground/70 bg-muted/60 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/8 px-2.5 py-0.5 rounded-full">
                 <Sparkles className="h-2.5 w-2.5" />
                 Auto-balanced
               </span>
@@ -228,9 +225,9 @@ const Goals = () => {
 
       <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-28">
         {/* Goal Type Selector */}
-        <section className="space-y-3">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Goal</Label>
-          <div className="flex rounded-2xl bg-muted/50 p-1 gap-1">
+        <section className="space-y-3 animate-fade-in">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Goal</Label>
+          <div className="flex rounded-2xl bg-muted/40 p-1 gap-1">
             {GOAL_OPTIONS.map((opt) => {
               const isActive = selectedGoal === opt.value;
               const Icon = opt.icon;
@@ -238,8 +235,8 @@ const Goals = () => {
                 <button
                   key={opt.value}
                   onClick={() => { setSelectedGoal(opt.value); setManualMode(false); }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-all duration-200 ${
-                    isActive ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground/80"
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 text-sm font-semibold transition-all duration-200 press-scale ${
+                    isActive ? "bg-card text-foreground shadow-card" : "text-muted-foreground hover:text-foreground/80"
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -252,25 +249,27 @@ const Goals = () => {
 
         {/* TDEE Breakdown */}
         {profile && (
-          <section className="rounded-2xl bg-card p-4 space-y-2 shadow-sm">
-            <div className="flex items-center gap-2 mb-1">
-              <Target className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Energy Calculation</span>
+          <section className="card-premium space-y-3">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60">
+                <Target className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Energy Calculation</span>
             </div>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">BMR</span>
-                <span className="font-medium">{Math.round(bmr)} kcal</span>
+                <span className="font-semibold">{Math.round(bmr)} kcal</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">TDEE</span>
-                <span className="font-medium">{Math.round(tdee)} kcal</span>
+                <span className="font-semibold">{Math.round(tdee)} kcal</span>
               </div>
-              <div className="flex justify-between border-t border-border/40 pt-1">
+              <div className="flex justify-between border-t border-border/40 pt-2">
                 <span className="text-muted-foreground">
                   {selectedGoal === "cut" ? "Deficit" : selectedGoal === "bulk" ? "Surplus" : "Adjustment"}
                 </span>
-                <span className="font-medium text-primary">
+                <span className="font-semibold text-primary">
                   {selectedGoal === "cut" ? "−400" : selectedGoal === "bulk" ? "+300" : "±0"} kcal
                 </span>
               </div>
@@ -280,7 +279,7 @@ const Goals = () => {
 
         {/* Calories */}
         <section className="space-y-3">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Calories</Label>
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Calories</Label>
           <div className="relative">
             <Input
               type="text"
@@ -292,24 +291,24 @@ const Goals = () => {
                 if (v !== "" && !/^\d*\.?\d*$/.test(v)) return;
                 setDraftCalories(v);
               }}
-              className="h-14 text-2xl font-medium pr-16 rounded-2xl bg-card border-border/60 shadow-sm"
+              className="h-14 text-2xl font-semibold pr-16 rounded-2xl bg-card border-border/40 shadow-card"
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/60 pointer-events-none">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/50 pointer-events-none">
               kcal
             </span>
           </div>
         </section>
 
-        <div className="h-px bg-border/60" />
+        <div className="h-px bg-border/40" />
 
         {/* Macros */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Macros</Label>
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Macros</Label>
             {manualMode && (
               <button
                 onClick={resetToAutoBalance}
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors press-scale"
               >
                 <RotateCcw className="h-3 w-3" />
                 Reset to auto-balance
@@ -325,7 +324,7 @@ const Goals = () => {
             ].map((f) => (
               <div key={f.label} className="flex items-center gap-3">
                 <div className="w-16 shrink-0">
-                  <span className="text-sm text-foreground">{f.label}</span>
+                  <span className="text-sm font-medium text-foreground">{f.label}</span>
                   {!manualMode && f.hint && (
                     <span className="block text-[9px] text-muted-foreground/50">{f.hint}</span>
                   )}
@@ -336,7 +335,7 @@ const Goals = () => {
                     inputMode="decimal"
                     value={f.value}
                     onChange={(e) => f.onChange(e.target.value)}
-                    className="h-10 pr-10 rounded-xl bg-card border-border/60 text-right text-sm shadow-sm"
+                    className="h-11 pr-10 rounded-xl bg-card border-border/40 text-right text-sm font-medium shadow-card"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground/50 pointer-events-none">
                     {f.unit}
@@ -345,21 +344,21 @@ const Goals = () => {
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground/60">
+          <p className="text-[11px] text-muted-foreground/50">
             {!manualMode && profile ? "Macros adjust automatically when calories or goal change." : "Manually set your macro targets."}
           </p>
         </section>
 
-        <div className="h-px bg-border/60" />
+        <div className="h-px bg-border/40" />
 
         {/* Hydration */}
         <section className="space-y-3">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <Droplets className="h-3.5 w-3.5" strokeWidth={1.5} />
             Hydration
           </Label>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-foreground w-16 shrink-0">Water</span>
+            <span className="text-sm font-medium text-foreground w-16 shrink-0">Water</span>
             <div className="relative flex-1">
               <Input
                 type="text"
@@ -370,7 +369,7 @@ const Goals = () => {
                   if (v !== "" && !/^\d*\.?\d*$/.test(v)) return;
                   setDraftWater(v);
                 }}
-                className="h-10 pr-10 rounded-xl bg-card border-border/60 text-right text-sm shadow-sm"
+                className="h-11 pr-10 rounded-xl bg-card border-border/40 text-right text-sm font-medium shadow-card"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground/50 pointer-events-none">
                 ml
@@ -379,16 +378,18 @@ const Goals = () => {
           </div>
         </section>
 
-        <div className="h-px bg-border/60" />
+        <div className="h-px bg-border/40" />
 
         {/* Goal Timeline */}
         {profile && (
-          <section className="rounded-2xl bg-primary/5 p-4 space-y-2 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Timeline</span>
+          <section className="card-premium space-y-3" style={{ background: "hsl(var(--primary) / 0.04)" }}>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+                <Clock className="h-4 w-4 text-primary" strokeWidth={1.5} />
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timeline</span>
             </div>
-            <p className="text-sm font-medium text-foreground">{getTimeline()}</p>
+            <p className="text-sm font-semibold text-foreground">{getTimeline()}</p>
             {selectedGoal !== "maintain" && (
               <p className="text-[11px] text-muted-foreground/60">
                 {profile.weight_kg} kg → {profile.goal_weight_kg} kg
@@ -398,7 +399,7 @@ const Goals = () => {
         )}
 
         {!profile && (
-          <div className="rounded-2xl bg-muted/30 p-4 text-center">
+          <div className="card-premium text-center">
             <p className="text-sm text-muted-foreground">Set up your profile to get personalized targets.</p>
           </div>
         )}
@@ -407,7 +408,7 @@ const Goals = () => {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full h-12 rounded-2xl text-sm font-medium shadow-sm"
+          className="w-full h-12 rounded-2xl text-sm font-semibold shadow-card press-scale"
         >
           {saving ? "Saving…" : "Save Goals"}
         </Button>

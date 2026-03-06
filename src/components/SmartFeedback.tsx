@@ -45,7 +45,6 @@ const SmartFeedback = ({ entries, goals, waterMl, waterGoalMl }: SmartFeedbackPr
 
   const tips: Tip[] = [];
 
-  // Protein check
   const proteinPct = totals.protein / goals.protein;
   if (proteinPct < 0.5 && entries.length >= 2) {
     tips.push({ icon: AlertTriangle, text: "You're low on protein today. Try adding chicken, eggs, or Greek yogurt.", type: "warning" });
@@ -53,12 +52,10 @@ const SmartFeedback = ({ entries, goals, waterMl, waterGoalMl }: SmartFeedbackPr
     tips.push({ icon: ThumbsUp, text: "Great protein intake today! 💪", type: "success" });
   }
 
-  // Sugar check
   if (totals.sugar > 50) {
     tips.push({ icon: AlertTriangle, text: `High sugar intake detected (${Math.round(totals.sugar)}g). Watch out for hidden sugars.`, type: "warning" });
   }
 
-  // Meal balance check
   const mealCalories: Record<string, number> = {};
   entries.forEach((e) => {
     mealCalories[e.meal_type] = (mealCalories[e.meal_type] || 0) + Number(e.calories);
@@ -73,22 +70,17 @@ const SmartFeedback = ({ entries, goals, waterMl, waterGoalMl }: SmartFeedbackPr
     }
   }
 
-  // Calorie overshoot — supportive, no-shame language
   const overBy = Math.round(totals.calories - goals.calories);
   if (overBy >= 300) {
-    tips.push({ icon: TrendingUp, text: `You're ${overBy} kcal above target today — that's just data, not a setback. A slightly lighter meal tomorrow keeps the weekly average on track. Consistency beats perfection! 📊`, type: "info" });
-  } else if (overBy > 0 && totals.calories > goals.calories * 1.05) {
-    tips.push({ icon: TrendingUp, text: `Slightly over target by ${overBy} kcal — totally normal. One day doesn't define progress. 💪`, type: "info" });
+    tips.push({ icon: TrendingUp, text: `You're ${overBy} kcal above target — a lighter meal tomorrow keeps the weekly average on track. 📊`, type: "info" });
   } else if (totals.calories >= goals.calories * 0.9 && totals.calories <= goals.calories * 1.05) {
     tips.push({ icon: ThumbsUp, text: "You're right on track with your calorie goal! 🎯", type: "success" });
   }
 
-  // Fat check
   if (totals.fat > goals.fat * 1.2) {
-    tips.push({ icon: AlertTriangle, text: "Fat intake is above target. Opt for leaner options for the rest of the day.", type: "warning" });
+    tips.push({ icon: AlertTriangle, text: "Fat intake is above target. Opt for leaner options.", type: "warning" });
   }
 
-  // Water check
   if (waterMl < waterGoalMl * 0.4 && entries.length >= 2) {
     tips.push({ icon: MessageCircle, text: "Don't forget to drink water! You're behind on hydration. 💧", type: "info" });
   }
@@ -96,29 +88,30 @@ const SmartFeedback = ({ entries, goals, waterMl, waterGoalMl }: SmartFeedbackPr
   if (tips.length === 0) return null;
 
   const typeStyles: Record<string, string> = {
-    warning: "border-orange-500/30 bg-orange-500/5 text-orange-700 dark:text-orange-400",
-    info: "border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400",
-    success: "border-green-500/30 bg-green-500/5 text-green-700 dark:text-green-400",
+    warning: "bg-warning/5 text-foreground",
+    info: "bg-primary/5 text-foreground",
+    success: "bg-success/5 text-foreground",
   };
 
   const iconStyles: Record<string, string> = {
-    warning: "text-orange-500",
-    info: "text-blue-500",
-    success: "text-green-500",
+    warning: "text-warning",
+    info: "text-primary",
+    success: "text-success",
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-1.5 mb-1">
-        <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Coach Tips</span>
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2 mb-1">
+        <MessageCircle className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Coach Tips</span>
       </div>
       {tips.slice(0, 3).map((tip, i) => (
         <div
           key={i}
-          className={`flex items-start gap-2.5 rounded-lg border px-3 py-2.5 text-sm ${typeStyles[tip.type]}`}
+          className={`flex items-start gap-3 rounded-2xl px-4 py-3 text-sm leading-relaxed animate-fade-in ${typeStyles[tip.type]}`}
+          style={{ animationDelay: `${i * 80}ms` }}
         >
-          <tip.icon className={`h-4 w-4 mt-0.5 shrink-0 ${iconStyles[tip.type]}`} />
+          <tip.icon className={`h-4 w-4 mt-0.5 shrink-0 ${iconStyles[tip.type]}`} strokeWidth={1.5} />
           <span>{tip.text}</span>
         </div>
       ))}

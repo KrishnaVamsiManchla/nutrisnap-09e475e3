@@ -20,10 +20,10 @@ const QuickActions = ({ onManual, onCamera, onVoice }: QuickActionsProps) => {
         <Button
           key={a.label}
           variant="outline"
-          className="h-auto flex-col gap-2.5 py-5 rounded-2xl border-0 bg-card hover:bg-accent transition-all shadow-sm"
+          className="h-auto flex-col gap-3 py-5 rounded-2xl border-0 bg-card hover:bg-accent transition-all shadow-card press-scale"
           onClick={a.onClick}
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/8">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/8">
             <a.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
           </div>
           <span className="text-xs font-medium text-foreground">{a.label}</span>

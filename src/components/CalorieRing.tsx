@@ -4,8 +4,8 @@ interface CalorieRingProps {
   size?: number;
 }
 
-const CalorieRing = ({ consumed, target, size = 170 }: CalorieRingProps) => {
-  const strokeWidth = 8;
+const CalorieRing = ({ consumed, target, size = 180 }: CalorieRingProps) => {
+  const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.min(consumed / target, 1.5);
@@ -15,17 +15,17 @@ const CalorieRing = ({ consumed, target, size = 170 }: CalorieRingProps) => {
   const gradientId = isOver ? "ring-grad-over" : "ring-grad";
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-4">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
           <defs>
             <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="hsl(var(--primary))" />
-              <stop offset="100%" stopColor="hsl(var(--health-blue) / 0.6)" />
+              <stop offset="100%" stopColor="hsl(217 91% 72%)" />
             </linearGradient>
             <linearGradient id="ring-grad-over" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="hsl(var(--health-red))" />
-              <stop offset="100%" stopColor="hsl(var(--health-red) / 0.6)" />
+              <stop offset="0%" stopColor="hsl(var(--destructive))" />
+              <stop offset="100%" stopColor="hsl(0 72% 60%)" />
             </linearGradient>
           </defs>
           {/* Background track */}
@@ -36,6 +36,7 @@ const CalorieRing = ({ consumed, target, size = 170 }: CalorieRingProps) => {
             fill="none"
             stroke="hsl(var(--muted))"
             strokeWidth={strokeWidth}
+            opacity={0.6}
           />
           {/* Progress arc */}
           <circle
@@ -52,11 +53,11 @@ const CalorieRing = ({ consumed, target, size = 170 }: CalorieRingProps) => {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-medium tracking-tight">{Math.round(consumed)}</span>
-          <span className="text-xs text-muted-foreground">of {target} kcal</span>
+          <span className="text-4xl font-semibold tracking-tight text-foreground">{Math.round(consumed)}</span>
+          <span className="text-xs text-muted-foreground mt-0.5">of {target} kcal</span>
         </div>
       </div>
-      <p className={`text-sm font-normal ${isOver ? "text-[hsl(var(--health-red))]" : "text-muted-foreground"}`}>
+      <p className={`text-sm font-medium ${isOver ? "text-destructive" : "text-muted-foreground"}`}>
         {isOver
           ? `${Math.round(consumed - target)} kcal over`
           : `${Math.round(remaining)} kcal remaining`}

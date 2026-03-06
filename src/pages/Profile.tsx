@@ -132,46 +132,46 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center justify-center px-4 py-2.5">
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">Profile</h1>
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl" style={{ borderBottom: "1px solid hsl(var(--border) / 0.5)" }}>
+        <div className="mx-auto flex max-w-lg items-center justify-center px-4 py-3">
+          <h1 className="text-lg font-bold tracking-tight text-foreground">Profile</h1>
         </div>
       </header>
 
       <main className="mx-auto max-w-lg space-y-6 px-4 py-6 pb-28">
         {/* Avatar + Name */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-10 w-10 text-primary" />
+        <div className="flex flex-col items-center gap-3 animate-fade-in">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10">
+            <User className="h-10 w-10 text-primary" strokeWidth={1.5} />
           </div>
           <Input
             placeholder="Your name"
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
-            className="max-w-[200px] text-center border-0 bg-transparent text-lg font-semibold focus-visible:ring-0 placeholder:text-muted-foreground/50"
+            className="max-w-[200px] text-center border-0 bg-transparent text-lg font-bold focus-visible:ring-0 placeholder:text-muted-foreground/40"
           />
           <p className="text-sm text-muted-foreground">{user?.email}</p>
         </div>
 
         {/* Invite Friends */}
-        <section className="rounded-2xl bg-card p-4 shadow-sm">
-          <button className="flex w-full items-center gap-3 active:scale-[0.98] transition-transform">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <Share2 className="h-5 w-5 text-primary" />
+        <section className="card-premium">
+          <button className="flex w-full items-center gap-3.5 press-scale">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+              <Share2 className="h-5 w-5 text-primary" strokeWidth={1.5} />
             </div>
             <div className="text-left">
-              <p className="text-sm font-medium text-foreground">Invite Friends</p>
+              <p className="text-sm font-semibold text-foreground">Invite Friends</p>
               <p className="text-xs text-muted-foreground">Share NutriSnap with friends</p>
             </div>
           </button>
         </section>
 
         {/* Personal Details */}
-        <section className="rounded-2xl bg-card p-5 space-y-4 shadow-sm">
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Personal Details</h2>
+        <section className="card-premium space-y-4">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Personal Details</h2>
 
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Gender</Label>
+            <Label className="text-xs text-muted-foreground font-medium">Gender</Label>
             <RadioGroup
               value={form.gender}
               onValueChange={(v) => update("gender", v as "male" | "female")}
@@ -189,31 +189,31 @@ const Profile = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">Age</Label>
-              <Input type="number" value={form.age} onChange={(e) => update("age", Number(e.target.value) || 0)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">Height (cm)</Label>
-              <Input type="number" value={form.height_cm} onChange={(e) => update("height_cm", Number(e.target.value) || 0)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">Current Weight (kg)</Label>
-              <Input type="number" value={form.weight_kg} onChange={(e) => update("weight_kg", Number(e.target.value) || 0)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-muted-foreground text-xs">Goal Weight (kg)</Label>
-              <Input type="number" value={form.goal_weight_kg} onChange={(e) => update("goal_weight_kg", Number(e.target.value) || 0)} />
-            </div>
+            {[
+              { label: "Age", value: form.age, key: "age" as const },
+              { label: "Height (cm)", value: form.height_cm, key: "height_cm" as const },
+              { label: "Current Weight (kg)", value: form.weight_kg, key: "weight_kg" as const },
+              { label: "Goal Weight (kg)", value: form.goal_weight_kg, key: "goal_weight_kg" as const },
+            ].map((field) => (
+              <div key={field.key} className="space-y-1.5">
+                <Label className="text-muted-foreground text-xs font-medium">{field.label}</Label>
+                <Input
+                  type="number"
+                  value={field.value}
+                  onChange={(e) => update(field.key, Number(e.target.value) || 0)}
+                  className="rounded-xl border-border/40"
+                />
+              </div>
+            ))}
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-muted-foreground text-xs">Activity Level</Label>
+            <Label className="text-muted-foreground text-xs font-medium">Activity Level</Label>
             <Select value={form.activity_level} onValueChange={(v) => update("activity_level", v as ProfileForm["activity_level"])}>
-              <SelectTrigger className="rounded-xl">
+              <SelectTrigger className="rounded-xl border-border/40">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 {Object.entries(ACTIVITY_LABELS).map(([k, v]) => (
                   <SelectItem key={k} value={k}>{v}</SelectItem>
                 ))}
@@ -222,16 +222,16 @@ const Profile = () => {
           </div>
         </section>
 
-        <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl text-sm font-medium shadow-sm">
+        <Button onClick={handleSave} disabled={saving} className="w-full h-12 rounded-2xl text-sm font-semibold shadow-card press-scale">
           {saving ? "Saving…" : "Save Profile"}
         </Button>
 
         {/* Account Actions */}
-        <section className="rounded-2xl bg-card p-5 space-y-3 shadow-sm">
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Account</h2>
+        <section className="card-premium space-y-3">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</h2>
           <Button
             variant="outline"
-            className="w-full justify-start gap-2"
+            className="w-full justify-start gap-2 rounded-xl border-border/40"
             onClick={async () => { await signOut(); navigate("/auth"); }}
           >
             <LogOut className="h-4 w-4" />
@@ -239,12 +239,12 @@ const Profile = () => {
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10">
+              <Button variant="ghost" className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/8 rounded-xl">
                 <Trash2 className="h-4 w-4" />
                 Delete Account
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="rounded-2xl">
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Account?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -252,8 +252,8 @@ const Profile = () => {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl">
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
