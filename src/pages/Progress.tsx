@@ -421,6 +421,26 @@ const Progress = () => {
             )}
           </div>
         </section>
+
+        {/* Consistency Score */}
+        <ConsistencyScore
+          trackingDays={dailyData.length}
+          totalDays={Math.min(30, dailyData.length || 7)}
+          proteinHitDays={dailyData.filter((d) => d.protein >= goals.protein * 0.9).length}
+          calorieHitDays={dailyData.filter((d) => d.calories >= goals.calories * 0.9 && d.calories <= goals.calories * 1.1).length}
+        />
+
+        {/* Meal Patterns */}
+        <MealPatternInsights
+          dailyData={dailyData.map((d) => ({
+            ...d,
+            entries: rawEntries
+              .filter((e) => format(new Date(e.created_at), "yyyy-MM-dd") === d.date)
+              .map((e) => ({ meal_type: e.meal_type, calories: Number(e.calories), created_at: e.created_at })),
+          }))}
+          calorieGoal={goals.calories}
+          proteinGoal={goals.protein}
+        />
       </main>
 
       {/* Add/Edit Weight Dialog */}
