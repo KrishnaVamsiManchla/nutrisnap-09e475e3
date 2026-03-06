@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_checkins: {
+        Row: {
+          checked_at: string
+          created_at: string
+          energy: number
+          hunger: number
+          id: string
+          mood: number
+          user_id: string
+        }
+        Insert: {
+          checked_at?: string
+          created_at?: string
+          energy?: number
+          hunger?: number
+          id?: string
+          mood?: number
+          user_id: string
+        }
+        Update: {
+          checked_at?: string
+          created_at?: string
+          energy?: number
+          hunger?: number
+          id?: string
+          mood?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_entries: {
         Row: {
           calories: number
