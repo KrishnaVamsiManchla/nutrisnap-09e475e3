@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import BottomNav from "@/components/BottomNav";
 import { ArrowLeft, Plus, Scale, Flame, Beef, Wheat, Droplets, TrendingUp, Trophy, Pencil, Trash2 } from "lucide-react";
+import ConsistencyScore from "@/components/ConsistencyScore";
+import MealPatternInsights from "@/components/MealPatternInsights";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +46,14 @@ interface DailyCalories {
   carbs: number;
   fat: number;
 }
+interface RawFoodEntry {
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  created_at: string;
+  meal_type: string;
+}
 
 const Progress = () => {
   // TODO: replace with real subscription check
@@ -55,6 +65,8 @@ const Progress = () => {
 
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [dailyData, setDailyData] = useState<DailyCalories[]>([]);
+  const [rawEntries, setRawEntries] = useState<RawFoodEntry[]>([]);
+  const [goals, setGoals] = useState({ calories: 2000, protein: 150 });
   const [streak, setStreak] = useState(0);
   const [showAddWeight, setShowAddWeight] = useState(false);
   const [editingLog, setEditingLog] = useState<WeightLog | null>(null);
@@ -77,11 +89,12 @@ const Progress = () => {
     const since = subDays(new Date(), 30).toISOString();
     const { data } = await supabase
       .from("food_entries")
-      .select("calories, protein_g, carbs_g, fat_g, created_at")
+      .select("calories, protein_g, carbs_g, fat_g, created_at, meal_type")
       .gte("created_at", since)
       .order("created_at", { ascending: true });
 
     if (!data) return;
+    setRawEntries(data as RawFoodEntry[]);
 
     // Group by date
     const grouped: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
@@ -115,10 +128,17 @@ const Progress = () => {
     setStreak(s);
   }, [user]);
 
+  const loadGoals = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from("user_goals").select("calories, protein_g").eq("user_id", user.id).maybeSingle();
+    if (data) setGoals({ calories: data.calories, protein: data.protein_g });
+  }, [user]);
+
   useEffect(() => {
     loadWeightLogs();
     loadDailyData();
-  }, [loadWeightLogs, loadDailyData]);
+    loadGoals();
+  }, [loadWeightLogs, loadDailyData, loadGoals]);
 
   const saveWeight = async () => {
     if (!user || !weightInput) return;
@@ -401,6 +421,26 @@ const Progress = () => {
             )}
           </div>
         </section>
+
+        {/* Consistency Score */}
+        <ConsistencyScore
+          trackingDays={dailyData.length}
+          totalDays={Math.min(30, dailyData.length || 7)}
+          proteinHitDays={dailyData.filter((d) => d.protein >= goals.protein * 0.9).length}
+          calorieHitDays={dailyData.filter((d) => d.calories >= goals.calories * 0.9 && d.calories <= goals.calories * 1.1).length}
+        />
+
+        {/* Meal Patterns */}
+        <MealPatternInsights
+          dailyData={dailyData.map((d) => ({
+            ...d,
+            entries: rawEntries
+              .filter((e) => format(new Date(e.created_at), "yyyy-MM-dd") === d.date)
+              .map((e) => ({ meal_type: e.meal_type, calories: Number(e.calories), created_at: e.created_at })),
+          }))}
+          calorieGoal={goals.calories}
+          proteinGoal={goals.protein}
+        />
       </main>
 
       {/* Add/Edit Weight Dialog */}
