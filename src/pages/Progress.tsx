@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import BottomNav from "@/components/BottomNav";
 import { ArrowLeft, Plus, Scale, Flame, Beef, Wheat, Droplets, TrendingUp, Trophy, Pencil, Trash2 } from "lucide-react";
+import ConsistencyScore from "@/components/ConsistencyScore";
+import MealPatternInsights from "@/components/MealPatternInsights";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
