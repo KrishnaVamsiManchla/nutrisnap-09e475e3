@@ -46,6 +46,14 @@ interface DailyCalories {
   carbs: number;
   fat: number;
 }
+interface RawFoodEntry {
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  created_at: string;
+  meal_type: string;
+}
 
 const Progress = () => {
   // TODO: replace with real subscription check
@@ -59,7 +67,6 @@ const Progress = () => {
   const [dailyData, setDailyData] = useState<DailyCalories[]>([]);
   const [rawEntries, setRawEntries] = useState<RawFoodEntry[]>([]);
   const [goals, setGoals] = useState({ calories: 2000, protein: 150 });
-  const [streak, setStreak] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showAddWeight, setShowAddWeight] = useState(false);
   const [editingLog, setEditingLog] = useState<WeightLog | null>(null);
