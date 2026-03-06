@@ -307,6 +307,8 @@ const Dashboard = () => {
           waterGoalMl={goals.water_ml}
         />
 
+        <DailyCheckin />
+
         <QuickActions
           onManual={() => setShowManual(true)}
           onCamera={() => setShowCamera(true)}
