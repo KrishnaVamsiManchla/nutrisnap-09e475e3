@@ -57,6 +57,9 @@ const Progress = () => {
 
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [dailyData, setDailyData] = useState<DailyCalories[]>([]);
+  const [rawEntries, setRawEntries] = useState<RawFoodEntry[]>([]);
+  const [goals, setGoals] = useState({ calories: 2000, protein: 150 });
+  const [streak, setStreak] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showAddWeight, setShowAddWeight] = useState(false);
   const [editingLog, setEditingLog] = useState<WeightLog | null>(null);
