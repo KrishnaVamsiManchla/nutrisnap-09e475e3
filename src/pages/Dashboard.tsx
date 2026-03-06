@@ -25,6 +25,7 @@ import NutritionResult from "@/components/NutritionResult";
 import PremiumBadge from "@/components/PremiumBadge";
 import LockedFeature from "@/components/LockedFeature";
 import GoalSummaryCard from "@/components/GoalSummaryCard";
+import DailyCheckin from "@/components/DailyCheckin";
 
 interface NutritionData {
   food_name: string;
