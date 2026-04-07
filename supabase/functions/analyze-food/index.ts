@@ -1,15 +1,55 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from "npm:zod@3.25.76";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const bodySchema = z.object({
+  image_base64: z.string().max(8_000_000).optional(),
+  food_description: z.string().max(500).optional(),
+  quantity: z.string().max(100).optional(),
+}).refine(d => d.image_base64 || d.food_description, {
+  message: "Provide image_base64 or food_description",
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { image_base64, food_description, quantity } = await req.json();
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Input validation
+    const parsed = bodySchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: parsed.error.flatten().fieldErrors }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { image_base64, food_description, quantity } = parsed.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -44,8 +84,6 @@ All values should be for the total amount shown/described. Be as accurate as pos
       let text = `Analyze this food and provide detailed nutritional information: ${food_description}`;
       if (quantity) text += `. Quantity: ${quantity}`;
       messages.push({ role: "user", content: text });
-    } else {
-      throw new Error("Either image_base64 or food_description is required");
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -71,21 +109,17 @@ All values should be for the total amount shown/described. Be as accurate as pos
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
       throw new Error("AI analysis failed");
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
     
-    // Parse the JSON from the response
     let nutritionData;
     try {
       const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       nutritionData = JSON.parse(cleaned);
     } catch {
-      console.error("Failed to parse AI response:", content);
       throw new Error("Failed to parse nutritional data");
     }
 
@@ -94,7 +128,7 @@ All values should be for the total amount shown/described. Be as accurate as pos
     });
   } catch (e) {
     console.error("analyze-food error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An error occurred processing your request." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
