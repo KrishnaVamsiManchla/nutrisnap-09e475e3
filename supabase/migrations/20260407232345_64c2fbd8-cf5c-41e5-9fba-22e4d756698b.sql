@@ -1,0 +1,1 @@
+CREATE POLICY "Users can delete own checkins" ON public.daily_checkins FOR DELETE TO authenticated USING (auth.uid() = user_id);
