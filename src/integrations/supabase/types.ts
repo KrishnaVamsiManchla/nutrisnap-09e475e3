@@ -98,6 +98,86 @@ export type Database = {
         }
         Relationships: []
       }
+      trainer_clients: {
+        Row: {
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          client_user_id: string | null
+          created_at: string
+          goal: string | null
+          id: string
+          notes: string | null
+          status: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          client_user_id?: string | null
+          created_at?: string
+          goal?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          client_user_id?: string | null
+          created_at?: string
+          goal?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trainer_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_broadcast: boolean
+          sender: string
+          trainer_client_id: string | null
+          trainer_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_broadcast?: boolean
+          sender?: string
+          trainer_client_id?: string | null
+          trainer_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_broadcast?: boolean
+          sender?: string
+          trainer_client_id?: string | null
+          trainer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_messages_trainer_client_id_fkey"
+            columns: ["trainer_client_id"]
+            isOneToOne: false
+            referencedRelation: "trainer_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_goals: {
         Row: {
           calories: number
@@ -182,6 +262,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       water_entries: {
         Row: {
           amount_ml: number
@@ -227,15 +328,108 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_assignments: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: string
+          notes: string | null
+          scheduled_for: string
+          trainer_client_id: string
+          trainer_id: string
+          workout_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scheduled_for?: string
+          trainer_client_id: string
+          trainer_id: string
+          workout_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scheduled_for?: string
+          trainer_client_id?: string
+          trainer_id?: string
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_assignments_trainer_client_id_fkey"
+            columns: ["trainer_client_id"]
+            isOneToOne: false
+            referencedRelation: "trainer_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_assignments_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workouts: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          duration_min: number | null
+          exercises: Json
+          id: string
+          title: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          duration_min?: number | null
+          exercises?: Json
+          id?: string
+          title: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          duration_min?: number | null
+          exercises?: Json
+          id?: string
+          title?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "client" | "trainer" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -362,6 +556,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["client", "trainer", "admin"],
+    },
   },
 } as const
