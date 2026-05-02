@@ -1,9 +1,11 @@
-import { Globe, Bell, Heart, Database, Shield, Crown, ChevronRight } from "lucide-react";
+import { Globe, Bell, Heart, Database, Shield, Crown, ChevronRight, Dumbbell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "@/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
+import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import {
   Select,
@@ -52,6 +54,15 @@ const Settings_ = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { i18n } = useTranslation();
+  const { isTrainer, enableTrainer } = useRole();
+
+  const handleTrainerClick = async () => {
+    if (!isTrainer) {
+      await enableTrainer();
+      toast.success("Trainer mode enabled");
+    }
+    navigate("/trainer");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,6 +160,28 @@ const Settings_ = () => {
             <div className="text-left">
               <p className="text-sm font-medium text-foreground">Manage Subscription</p>
               <p className="text-xs text-muted-foreground">View plans and billing</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
+          </button>
+        </section>
+
+        {/* Trainer Mode */}
+        <section className="card-premium space-y-3 animate-fade-in" style={{ animationDelay: "360ms" }}>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+            <Dumbbell className="h-3.5 w-3.5" strokeWidth={1.5} />
+            Trainer Mode
+          </h2>
+          <button
+            onClick={handleTrainerClick}
+            className="flex w-full items-center justify-between rounded-xl px-3.5 py-3 transition-colors hover:bg-muted/40 press-scale"
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium text-foreground">
+                {isTrainer ? "Open Trainer Dashboard" : "Enable Trainer Mode"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Manage clients, workouts, and chat
+              </p>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
           </button>
