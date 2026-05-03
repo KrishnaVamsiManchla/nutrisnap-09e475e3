@@ -25,6 +25,10 @@ import Chat from "./pages/trainer/Chat";
 import Broadcast from "./pages/trainer/Broadcast";
 import Payments from "./pages/trainer/Payments";
 import Alerts from "./pages/trainer/Alerts";
+import InviteClient from "./pages/trainer/InviteClient";
+import ProgressPhotos from "./pages/trainer/ProgressPhotos";
+import CheckIn from "./pages/trainer/CheckIn";
+import PaymentReminder from "./pages/trainer/PaymentReminder";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +80,10 @@ const App = () => (
           <Route path="/trainer/broadcast" element={<ProtectedRoute><Broadcast /></ProtectedRoute>} />
           <Route path="/trainer/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
           <Route path="/trainer/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+          <Route path="/trainer/invite" element={<ProtectedRoute><InviteClient /></ProtectedRoute>} />
+          <Route path="/trainer/clients/:id/photos" element={<ProtectedRoute><ProgressPhotos /></ProtectedRoute>} />
+          <Route path="/trainer/clients/:id/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+          <Route path="/trainer/payments/reminder" element={<ProtectedRoute><PaymentReminder /></ProtectedRoute>} />
           <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
