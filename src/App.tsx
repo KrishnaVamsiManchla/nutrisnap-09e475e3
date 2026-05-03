@@ -29,6 +29,7 @@ import InviteClient from "./pages/trainer/InviteClient";
 import ProgressPhotos from "./pages/trainer/ProgressPhotos";
 import CheckIn from "./pages/trainer/CheckIn";
 import PaymentReminder from "./pages/trainer/PaymentReminder";
+import RoleSelection from "./pages/RoleSelection";
 
 const queryClient = new QueryClient();
 
@@ -41,10 +42,30 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const RoleRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
-  const { isTrainer, loading: roleLoading } = useRole();
+  const { isTrainer, roles, loading: roleLoading } = useRole();
   if (authLoading || roleLoading) return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
   if (!user) return <Navigate to="/auth" replace />;
+  if (roles.length === 0) return <Navigate to="/role" replace />;
   if (isTrainer) return <Navigate to="/trainer" replace />;
+  return <>{children}</>;
+};
+
+const TrainerRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading: authLoading } = useAuth();
+  const { isTrainer, roles, loading: roleLoading } = useRole();
+  if (authLoading || roleLoading) return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (roles.length === 0) return <Navigate to="/role" replace />;
+  if (!isTrainer) return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
+const RoleSelectionRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading: authLoading } = useAuth();
+  const { roles, isTrainer, loading: roleLoading } = useRole();
+  if (authLoading || roleLoading) return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (roles.length > 0) return <Navigate to={isTrainer ? "/trainer" : "/"} replace />;
   return <>{children}</>;
 };
 
@@ -63,12 +84,13 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<RoleRoute><Dashboard /></RoleRoute>} />
+          <Route path="/role" element={<RoleSelectionRoute><RoleSelection /></RoleSelectionRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
           <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
           <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/trainer" element={<ProtectedRoute><TrainerDashboard /></ProtectedRoute>} />
+          <Route path="/trainer" element={<TrainerRoute><TrainerDashboard /></TrainerRoute>} />
           <Route path="/trainer/clients" element={<ProtectedRoute><ClientList /></ProtectedRoute>} />
           <Route path="/trainer/clients/new" element={<ProtectedRoute><AddClient /></ProtectedRoute>} />
           <Route path="/trainer/clients/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
