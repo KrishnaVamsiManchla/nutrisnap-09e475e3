@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ChevronLeft, MessageCircle, Dumbbell, Mail, Phone, Target } from "lucide-react";
+import { ChevronLeft, MessageCircle, Dumbbell, Mail, Phone, Target, Camera, ClipboardCheck } from "lucide-react";
 import TrainerLayout from "@/components/trainer/TrainerLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -57,37 +58,62 @@ const ClientDetail = () => {
             <p className="text-xs uppercase tracking-wider text-muted-foreground">{client.status}</p>
           </Card>
 
-          <Card className="card-premium divide-y divide-border/60">
-            {client.goal && (
-              <Row icon={<Target className="h-4 w-4" />} label="Goal" value={client.goal} />
-            )}
-            {client.client_email && (
-              <Row icon={<Mail className="h-4 w-4" />} label="Email" value={client.client_email} />
-            )}
-            {client.client_phone && (
-              <Row icon={<Phone className="h-4 w-4" />} label="Phone" value={client.client_phone} />
-            )}
-          </Card>
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="progress">Progress</TabsTrigger>
+              <TabsTrigger value="checkins">Check-ins</TabsTrigger>
+              <TabsTrigger value="notes">Notes</TabsTrigger>
+            </TabsList>
 
-          {client.notes && (
-            <Card className="card-premium p-4">
-              <p className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">Notes</p>
-              <p className="text-sm text-foreground">{client.notes}</p>
-            </Card>
-          )}
+            <TabsContent value="overview" className="mt-4 space-y-3">
+              <Card className="card-premium divide-y divide-border/60">
+                {client.goal && <Row icon={<Target className="h-4 w-4" />} label="Goal" value={client.goal} />}
+                {client.client_email && <Row icon={<Mail className="h-4 w-4" />} label="Email" value={client.client_email} />}
+                {client.client_phone && <Row icon={<Phone className="h-4 w-4" />} label="Phone" value={client.client_phone} />}
+              </Card>
+              <div className="grid grid-cols-2 gap-3">
+                <Link to={`/trainer/chat/${client.id}`}>
+                  <Button variant="outline" className="w-full gap-2">
+                    <MessageCircle className="h-4 w-4" /> Message
+                  </Button>
+                </Link>
+                <Link to={`/trainer/workouts/assign?client=${client.id}`}>
+                  <Button className="w-full gap-2">
+                    <Dumbbell className="h-4 w-4" /> Assign
+                  </Button>
+                </Link>
+              </div>
+            </TabsContent>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Link to={`/trainer/chat/${client.id}`}>
-              <Button variant="outline" className="w-full gap-2">
-                <MessageCircle className="h-4 w-4" /> Chat
-              </Button>
-            </Link>
-            <Link to={`/trainer/workouts/assign?client=${client.id}`}>
-              <Button className="w-full gap-2">
-                <Dumbbell className="h-4 w-4" /> Assign
-              </Button>
-            </Link>
-          </div>
+            <TabsContent value="progress" className="mt-4 space-y-3">
+              <Card className="card-premium p-4 text-sm text-muted-foreground">
+                Progress data from the client app appears here.
+              </Card>
+              <Link to={`/trainer/clients/${client.id}/photos`}>
+                <Button variant="outline" className="w-full gap-2">
+                  <Camera className="h-4 w-4" /> Progress Photos
+                </Button>
+              </Link>
+            </TabsContent>
+
+            <TabsContent value="checkins" className="mt-4 space-y-3">
+              <Card className="card-premium p-4 text-sm text-muted-foreground">
+                No check-ins yet.
+              </Card>
+              <Link to={`/trainer/clients/${client.id}/checkin`}>
+                <Button className="w-full gap-2">
+                  <ClipboardCheck className="h-4 w-4" /> Weekly Check-in
+                </Button>
+              </Link>
+            </TabsContent>
+
+            <TabsContent value="notes" className="mt-4">
+              <Card className="card-premium p-4">
+                <p className="text-sm text-foreground">{client.notes || "No notes yet."}</p>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </TrainerLayout>
