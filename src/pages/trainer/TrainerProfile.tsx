@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, CreditCard, LogOut, Repeat, Bell, Megaphone } from "lucide-react";
+import { ChevronRight, CreditCard, LogOut, Repeat, Bell, Megaphone, UserPlus } from "lucide-react";
 import TrainerLayout from "@/components/trainer/TrainerLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ const TrainerProfile = () => {
   const items = [
     { to: "/trainer/pricing", label: "Pricing & Plan", icon: CreditCard },
     { to: "/trainer/payments", label: "Payments", icon: CreditCard },
+    { to: "/trainer/invite", label: "Invite Client", icon: UserPlus },
     { to: "/trainer/broadcast", label: "Broadcast Message", icon: Megaphone },
     { to: "/trainer/alerts", label: "Alerts", icon: Bell },
   ];

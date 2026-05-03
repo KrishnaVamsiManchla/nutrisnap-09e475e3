@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, ChevronRight, User } from "lucide-react";
+import { Plus, ChevronRight, User, Megaphone } from "lucide-react";
 import TrainerLayout from "@/components/trainer/TrainerLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,11 +38,18 @@ const ClientList = () => {
     <TrainerLayout
       title="Clients"
       right={
-        <Link to="/trainer/clients/new">
-          <Button size="sm" variant="ghost" className="gap-1">
-            <Plus className="h-4 w-4" /> Add
-          </Button>
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link to="/trainer/broadcast">
+            <Button size="sm" variant="ghost" className="gap-1">
+              <Megaphone className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link to="/trainer/clients/new">
+            <Button size="sm" variant="ghost" className="gap-1">
+              <Plus className="h-4 w-4" /> Add
+            </Button>
+          </Link>
+        </div>
       }
     >
       {loading ? (

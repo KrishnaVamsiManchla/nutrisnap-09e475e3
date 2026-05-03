@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Users, Dumbbell, Bell, CreditCard, Megaphone, ArrowRight } from "lucide-react";
 import TrainerLayout from "@/components/trainer/TrainerLayout";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const TrainerDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ clients: 0, workouts: 0, assignments: 0 });
 
   useEffect(() => {
@@ -30,7 +31,14 @@ const TrainerDashboard = () => {
   ];
 
   return (
-    <TrainerLayout title="Trainer">
+    <TrainerLayout
+      title="Trainer"
+      right={
+        <Button variant="ghost" size="icon" onClick={() => navigate("/trainer/alerts")}>
+          <Bell className="h-5 w-5" />
+        </Button>
+      }
+    >
       <div className="space-y-5">
         <Card className="card-premium p-5">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Welcome back</p>

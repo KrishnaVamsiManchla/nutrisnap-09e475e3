@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, UserPlus } from "lucide-react";
+import { Link } from "react-router-dom";
 import TrainerLayout from "@/components/trainer/TrainerLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,6 +89,11 @@ const AddClient = () => {
           <Button type="submit" className="w-full" disabled={saving}>
             {saving ? "Saving…" : "Add Client"}
           </Button>
+          <Link to="/trainer/invite" className="block">
+            <Button type="button" variant="outline" className="w-full gap-2">
+              <UserPlus className="h-4 w-4" /> Invite via link instead
+            </Button>
+          </Link>
         </form>
       </Card>
     </TrainerLayout>

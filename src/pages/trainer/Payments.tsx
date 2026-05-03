@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft, CreditCard } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { ChevronLeft, CreditCard, Bell } from "lucide-react";
 import TrainerLayout from "@/components/trainer/TrainerLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,14 @@ const Payments = () => {
           <p className="text-xs text-muted-foreground">
             Collect subscriptions and one-time fees from clients.
           </p>
-          <Button className="mt-4" disabled>Set up payouts</Button>
+          <div className="mt-4 flex flex-col gap-2">
+            <Button disabled>Set up payouts</Button>
+            <Link to="/trainer/payments/reminder">
+              <Button variant="outline" className="w-full gap-2">
+                <Bell className="h-4 w-4" /> Send Payment Reminder
+              </Button>
+            </Link>
+          </div>
         </Card>
       </div>
     </TrainerLayout>
